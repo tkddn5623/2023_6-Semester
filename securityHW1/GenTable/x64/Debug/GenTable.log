@@ -1,3 +1,5 @@
-﻿  GenTable.c
-D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\GenTable\GenTable.c(43): warning C4715: 'makeRainbowTable': not all control paths return a value
-  GenTable.vcxproj -> D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\x64\Debug\GenTable.exe
+﻿  genTable.c
+D:\!!Documents 2021\!!Programming projects\2023_6-Semester\securityHW1\genTable.c(25,10): warning C4101: 'k': unreferenced local variable
+D:\!!Documents 2021\!!Programming projects\2023_6-Semester\securityHW1\genTable.c(51,12): warning C4101: 'SPACEBOUND': unreferenced local variable
+D:\!!Documents 2021\!!Programming projects\2023_6-Semester\securityHW1\genTable.c(71): warning C4715: 'makeRainbowTable': not all control paths return a value
+  genTable.vcxproj -> D:\!!Documents 2021\!!Programming projects\2023_6-Semester\securityHW1\x64\Debug\genTable.exe

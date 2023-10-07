@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>17.0</VCProjectVersion>
+    <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a0bcbe01-ecc3-45d3-a42d-57b8ca111124}</ProjectGuid>
-    <RootNamespace>GenTable</RootNamespace>
+    <ProjectGuid>{f1b384ca-d2db-49a7-a319-ce36c7d5cd7c}</ProjectGuid>
+    <RootNamespace>genTable</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -128,11 +128,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\aes\aes.c" />
-    <ClCompile Include="GenTable.c" />
+    <ClInclude Include="..\aes.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\aes\aes.h" />
+    <ClCompile Include="..\aes.c" />
+    <ClCompile Include="..\genTable.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

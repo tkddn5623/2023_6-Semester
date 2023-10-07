@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>17.0</VCProjectVersion>
+    <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{5fd424d0-699b-49f2-96e0-5e3cac235985}</ProjectGuid>
+    <ProjectGuid>{f80304ec-0d72-4227-9076-6a22f0efbc94}</ProjectGuid>
     <RootNamespace>doCrack</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -127,11 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\aes\aes.c" />
-    <ClCompile Include="doCrack.c" />
+    <ClInclude Include="..\aes.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\aes\aes.h" />
+    <ClCompile Include="..\aes.c" />
+    <ClCompile Include="..\doCrack.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
