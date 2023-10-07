@@ -1,16 +1,17 @@
 CC=gcc
 CFLAGS=-O2 -Wextra -Wall -Wno-unused-result -std=c99 -g
 TARGET=genTable.exe doCrack.exe
-OBJS=genTable.o doCrack.o
+OBJS1=genTable.o aes.o
+OBJS2=doCrack.o aes.o
 
 .PHONY: all clean
 
 all: $(TARGET) 
 
-genTable.exe: $(OBJS) 
+genTable.exe: $(OBJS1) 
 	$(CC) $(CFLAGS) -o $@ $^
 	
-doCrack.exe: $(OBJS) 
+doCrack.exe: $(OBJS2) 
 	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c 
