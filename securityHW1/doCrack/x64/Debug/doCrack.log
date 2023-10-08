@@ -1,0 +1,9 @@
+﻿  aes.c
+D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\aes.c(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
+  doCrack.c
+D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\doCrack.c(68,10): warning C4101: 'cypher': unreferenced local variable
+  reduction.c
+  Generating Code...
+D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\doCrack.c(35): warning C4716: 'tableMergeSort': must return a value
+D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\doCrack.c(66): warning C4716: 'findRainbowTable': must return a value
+  doCrack.vcxproj -> D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\x64\Debug\doCrack.exe

@@ -1,5 +1,5 @@
-#include <stdint.h>
 #include <string.h>
+#include "reduction.h"
 void reduction(uint8_t dest[], const uint8_t src[], int destlen, int srclen, int pwbits) {
 	int quotient = pwbits / 8;
 	int reminder = pwbits % 8;
