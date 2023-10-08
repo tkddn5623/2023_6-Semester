@@ -18,4 +18,4 @@ doCrack.exe: $(OBJS2)
 	$(CC) $(CFLAGS) -c -o $@ $^
    
 clean: 
-	rm *.o $(TARGET)
+	rm rainbow *.o $(TARGET)

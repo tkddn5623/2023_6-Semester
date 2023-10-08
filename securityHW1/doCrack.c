@@ -5,11 +5,13 @@
 #include "aes.h"       /// This is third party AES header from github
 #include "reduction.h" /// This is my reduction header
 ////////////////////////////////////////////////////////////////////////
+#define VISITEDMAX (1 << 14)
 
 struct rainbowEntry {
 	uint8_t x[16];
 	uint8_t y[16];
 };
+int TOTAL_AES = 0;
 
 static int argv_valid_check(const char* s) {
 	int a;
@@ -83,7 +85,29 @@ int tableSearch(struct rainbowEntry list[], uint8_t key[], int listsize) {
 	}
 	return -1;
 }
-void readRainbowTable(int pwbits, const uint8_t cipher[], const char* rainbowPath) {
+int _findRainbowTable_tryrow(int pwbits, const uint8_t cipher[], struct rainbowEntry rainbowEntries[], int rainbowEntryIndex) {
+	static int visited[1 << 14];
+	if (visited[rainbowEntryIndex]) return 0;
+	visited[rainbowEntryIndex] = 1;
+	struct AES_ctx ctx;
+	uint8_t plain[16];  //128 bit
+	uint8_t key[16];    //128 bit
+	memcpy(key, rainbowEntries[rainbowEntryIndex].x, 16);
+	for (int i = 0; i < REDUCTCHAIN; i++) {
+		memset(plain, 0, sizeof(plain));
+		TOTAL_AES++;
+		AES_init_ctx(&ctx, key);
+		AES_ECB_encrypt(&ctx, plain);    // Third-party Hash function
+		if (!uint8v_cmp(cipher, plain, 16)) {
+			for (int j = 0; j < 16; j++) { printf("%02x", key[j]); }
+			putchar('\n');
+			return 1;
+		}
+		reduction(key, plain, 16, 16, pwbits); // Reduction function
+	}
+	return 0;
+}
+void findRainbowTable(int pwbits, const uint8_t cipher[], const char* rainbowPath) {
 	FILE* fi;
 	if (!(fi = fopen(rainbowPath, "rb"))) {
 		printf("Error: Rainbow file open error\n");
@@ -94,56 +118,27 @@ void readRainbowTable(int pwbits, const uint8_t cipher[], const char* rainbowPat
 	uint8_t plain[16];  //128 bit
 	uint8_t key[16];    //128 bit
 	struct rainbowEntry* rainbowEntries;
-	int rainbowEntryIndex, totalAES = 0;
-	if (!(rainbowEntries = calloc(SPACEBOUND, sizeof(struct rainbowEntry)))) exit(1);
+	int rainbowEntryIndex, success = 0;
+	
+	if (!(rainbowEntries = calloc(SPACEBOUND, sizeof(struct rainbowEntry)))) exit(1);	
 	fread(rainbowEntries, 1, sizeof(struct rainbowEntry) * SPACEBOUND, fi);
 	tableSort(rainbowEntries, SPACEBOUND);
-	
 	reduction(key, cipher, 16, 16, pwbits); // Reduction function
 	for (int i = 0; i < REDUCTCHAIN; i++) {
-		if ((rainbowEntryIndex = tableSearch(rainbowEntries, key, SPACEBOUND)) > -1) {
+		if ((rainbowEntryIndex = tableSearch(rainbowEntries, key, SPACEBOUND)) > -1 &&
+			_findRainbowTable_tryrow(pwbits, cipher, rainbowEntries, rainbowEntryIndex)) {
+			success = 1;
 			break;
 		}
 		memset(plain, 0, sizeof(plain));
-		totalAES++;
+		TOTAL_AES++;
 		AES_init_ctx(&ctx, key);
 		AES_ECB_encrypt(&ctx, plain);   // Third-party Hash function
 		reduction(key, plain, 16, 16, pwbits); // Reduction function
 	}
-	printf("Idx was %d\n", rainbowEntryIndex);
-	for (int i = 0; i < 16; i++) {
-		printf("%02x", rainbowEntries[rainbowEntryIndex].x[i]);
-	}
-	putchar('\n');
-	for (int i = 0; i < 16; i++) {
-		printf("%02x", rainbowEntries[rainbowEntryIndex].y[i]);
-	}
-	putchar('\n');
-
-	
-	if (rainbowEntryIndex == -1) {
-		printf("failure\n");
-	}
-	else {
-		memcpy(key, rainbowEntries[rainbowEntryIndex].x, sizeof(key));
-		for (int i = 0; i < REDUCTCHAIN; i++) {
-			memset(plain, 0, sizeof(plain));
-			totalAES++;
-			AES_init_ctx(&ctx, key);
-			AES_ECB_encrypt(&ctx, plain);    // Third-party Hash function
-			if (!uint8v_cmp(cipher, plain, 16)) {
-				for (int j = 0; j < 16; j++) { printf("%02x", key[j]); }
-				putchar('\n');
-				break;
-			}
-			reduction(key, plain, 16, 16, pwbits); // Reduction function
-		}
-	}
-	printf("the number of times AES: %d\n", totalAES);
+	if (!success) printf("failure\n");
+	printf("the number of times AES: %d\n", TOTAL_AES);
 	free(rainbowEntries);
-}
-int findRainbowTable(int pwbits) {
-
 }
 int main(int argc, char* argv[]) {
 	uint8_t cipher[16];
@@ -165,6 +160,5 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 	str_to_uint8v(cipher, argv[2], 16);
-	readRainbowTable(pwbits, cipher, "rainbow");
-	//findRainbowTable(pwbits, "rainbow");
+	findRainbowTable(pwbits, cipher, "rainbow");
 }
