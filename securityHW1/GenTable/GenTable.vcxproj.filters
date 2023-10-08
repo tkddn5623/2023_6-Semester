@@ -18,12 +18,18 @@
     <ClInclude Include="..\aes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\reduction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\genTable.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\aes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reduction.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

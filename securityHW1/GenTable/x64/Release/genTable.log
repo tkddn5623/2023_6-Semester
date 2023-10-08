@@ -1,0 +1,11 @@
+﻿  aes.c
+D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\aes.c(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
+  genTable.c
+D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\genTable.c(27,10): warning C4101: 'k': unreferenced local variable
+  Generating code
+D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\genTable.c(116): warning C4715: 'makeRainbowTable': not all control paths return a value
+  19 of 19 functions (100.0%) were compiled.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  genTable.vcxproj -> D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\x64\Release\genTable.exe

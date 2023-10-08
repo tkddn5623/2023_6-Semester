@@ -1,4 +1,2 @@
 ﻿  genTable.c
-D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\genTable.c(27,10): warning C4101: 'k': unreferenced local variable
-D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\genTable.c(123): warning C4715: 'makeRainbowTable': not all control paths return a value
   genTable.vcxproj -> D:\!!Documents\!!Programming projects\2023_6-Semester\securityHW1\x64\Debug\genTable.exe
