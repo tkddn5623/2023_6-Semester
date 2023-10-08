@@ -24,12 +24,6 @@ static uint8_t* uint8v_add1(uint8_t u8vec[], int length) {
 	}
 	return u8vec;
 }
-static int uint8v_cmp(const uint8_t u8vec1[], const uint8_t u8vec2[], int length) {
-	for (int i = 0; i < length; i++) {
-		if (u8vec1[i] != u8vec2[i]) return 1;
-	}
-	return 0;
-}
 void makeRainbowTable(int pwbits, const char* outputPath) {
 	FILE* fo;
 	if (!(fo = fopen(outputPath, "wb"))) {
