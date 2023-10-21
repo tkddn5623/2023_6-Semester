@@ -27,7 +27,7 @@ bool    b_solid_color = false;
 void update()
 {
 	// update simulation factor by time
-	float theta = float(glfwGetTime())*0.5f;
+	float theta = float(glfwGetTime())*0.05f;
 
 	// update uniform variables in vertex/fragment shaders
 	GLint uloc;
