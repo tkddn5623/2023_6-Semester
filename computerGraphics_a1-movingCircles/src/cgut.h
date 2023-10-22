@@ -343,7 +343,7 @@ inline const ivec2 cg_default_window_size()
 #ifdef GL_ES_VERSION_2_0
     return ivec2( 576, 1024 );  // initial window size similarly to smartphone
 #else
-    return ivec2( 720, 480 );   // initial window size
+    return ivec2(720, 480);	// initial window size
 #endif
 }
 
