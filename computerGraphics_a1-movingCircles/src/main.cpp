@@ -125,8 +125,10 @@ void update_vertex_buffer(const std::vector<vertex>& vertices, uint N)
 	static GLuint index_buffer = 0;     // ID holder for index buffer
 
 	// clear and create new buffers
-	if (vertex_buffer)  glDeleteBuffers(1, &vertex_buffer); vertex_buffer = 0;
-	if (index_buffer)   glDeleteBuffers(1, &index_buffer);  index_buffer = 0;
+	if (vertex_buffer) glDeleteBuffers(1, &vertex_buffer); 
+	vertex_buffer = 0;
+	if (index_buffer) glDeleteBuffers(1, &index_buffer); 
+	index_buffer = 0;
 
 	// check exceptions
 	if (vertices.empty()) { printf("[error] vertices is empty.\n"); return; }
