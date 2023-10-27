@@ -69,3 +69,8 @@ x64/
 
 # exercises
 _exercise/
+
+# Professor's good vs solution name changer
+# and openGL glfw lib
+!vcc.exe
+!glfw3.x64.lib
