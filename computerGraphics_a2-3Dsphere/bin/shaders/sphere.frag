@@ -12,11 +12,11 @@ in vec2 tc;	// used for texture coordinate visualization
 out vec4 fragColor;
 
 // shader's global variables, called the uniform variables
-uniform bool b_solid_color;
-uniform vec4 solid_color;
+uniform uint u_frag_color_toggle;
 
 void main()
 {
-	fragColor = b_solid_color ? solid_color : vec4(tc.xy,0,1);
-	// fragColor = b_solid_color ? solid_color : vec4(1,0,0,1);
+	if (u_frag_color_toggle == 0) fragColor = vec4(tc.xy,0,1);
+	else if (u_frag_color_toggle == 1) fragColor = vec4(tc.xxx,1);
+	else fragColor = vec4(tc.yyy,1);
 }

@@ -1,15 +1,14 @@
 #include "cgmath.h"     // slee's simple math library
 #include "cgut.h"       // slee's OpenGL utility
-#include "circle.h"     // circle class definition
+#include "sphere.h"     // circle class definition
 
 //*************************************
 // global constants
-static const char* window_name = "cgbase - circle";
-static const char* vert_shader_path = "shaders/circ.vert";
-static const char* frag_shader_path = "shaders/circ.frag";
-static const uint   MIN_TESS = 3;       // minimum tessellation factor (down to a triangle)
-static const uint   MAX_TESS = 256;     // maximum tessellation factor (up to 256 triangles)
-uint                NUM_TESS = 7;       // initial tessellation factor of the circle as a polygon
+static const char*  window_name = "a2 - sphere";
+static const char*  vert_shader_path = "shaders/sphere.vert";
+static const char*  frag_shader_path = "shaders/sphere.frag";
+uint                EDGE_LONGITUDE = 72;
+uint                EDGE_LATITUDE  = 36;
 
 //*************************************
 // window objects
@@ -25,14 +24,14 @@ GLuint  vertex_array = 0;   // ID holder for vertex array object
 // global variables
 int     frame = 0;                      // index of rendering frames
 float   t = 0.0f;                       // current simulation parameter
-bool    b_solid_color = false;          // use circle's color?
+uint    u_frag_color_toggle = 0;        // frag color mode 
 bool    b_index_buffer = true;          // use index buffering?
+bool    b_rotate = false;               // it rotates?
 #ifndef GL_ES_VERSION_2_0
 bool    b_wireframe = false;
 #endif
-auto    circles = std::move(create_circles());
-struct { bool add = false, sub = false; operator bool() const { return add || sub; } } b; // flags of keys for smooth changes
-
+auto    spheres = std::move(create_sphere());
+float   glfwTime_bias = 0.0f;
 //*************************************
 // holder of vertices and indices of a unit circle
 std::vector<vertex> unit_circle_vertices;   // host-side vertices
@@ -41,7 +40,7 @@ std::vector<vertex> unit_circle_vertices;   // host-side vertices
 void update()
 {
 	// update global simulation parameter
-	t = float(glfwGetTime()) * 0.4f;
+	if (b_rotate) t = (float(glfwGetTime()) - glfwTime_bias);
 
 	// tricky aspect correction matrix for non-square window
 	float aspect = window_size.x / float(window_size.y);
@@ -49,18 +48,18 @@ void update()
 	{
 		std::min(1 / aspect,1.0f), 0, 0, 0,
 		0, std::min(aspect,1.0f), 0, 0,
-		0, 0, 1, 0,
+		0, 0, 1, 0, 
 		0, 0, 0, 1
 	};
 
 	// update common uniform variables in vertex/fragment shaders
 	GLint uloc;
-	uloc = glGetUniformLocation(program, "b_solid_color");  if (uloc > -1) glUniform1i(uloc, b_solid_color);
-	uloc = glGetUniformLocation(program, "aspect_matrix");  if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, aspect_matrix);
 
-	// update vertex buffer by the pressed keys
-	void update_tess(); // forward declaration
-	if (b) update_tess();
+	mat4 view_projection_matrix = aspect_matrix * mat4{ 0,1,0,0,0,0,1,0,-1,0,0,1,0,0,0,1 };
+	uloc = glGetUniformLocation(program, "view_projection_matrix");  if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, view_projection_matrix);
+
+	uloc = glGetUniformLocation(program, "u_frag_color_toggle");  if (uloc > -1) glUniform1ui(uloc, u_frag_color_toggle);
+	uloc = glGetUniformLocation(program, "aspect_matrix");  if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, aspect_matrix);
 }
 
 void render()
@@ -74,20 +73,19 @@ void render()
 	// bind vertex array object
 	glBindVertexArray(vertex_array);
 
-	// render two circles: trigger shader program to process vertex data
-	for (auto& c : circles)
+	// render spheres: trigger shader program to process vertex data
+	for (auto& s : spheres)
 	{
-		// per-circle update
-		c.update(t);
+		// per-sphere update
+		s.update(t);
 
-		// update per-circle uniforms
+		// update per-sphere uniforms
 		GLint uloc;
-		uloc = glGetUniformLocation(program, "solid_color");  if (uloc > -1) glUniform4fv(uloc, 1, c.color);  // pointer version
-		uloc = glGetUniformLocation(program, "model_matrix"); if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, c.model_matrix);
+		uloc = glGetUniformLocation(program, "model_matrix"); if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, s.model_matrix);
 
-		// per-circle draw calls
-		if (b_index_buffer) glDrawElements(GL_TRIANGLES, NUM_TESS * 3, GL_UNSIGNED_INT, nullptr);
-		else                glDrawArrays(GL_TRIANGLES, 0, NUM_TESS * 3); // NUM_TESS = N
+		// per-sphere draw calls
+		if (b_index_buffer) glDrawElements(GL_TRIANGLES, 2 * EDGE_LATITUDE * EDGE_LONGITUDE * 3, GL_UNSIGNED_INT, nullptr);
+		else                glDrawArrays(GL_TRIANGLES, 0, 2 * EDGE_LATITUDE * EDGE_LONGITUDE * 3); // NUM_TESS = N
 	}
 
 	// swap front and back buffers, and display to screen
@@ -107,27 +105,28 @@ void print_help()
 	printf("[help]\n");
 	printf("- press ESC or 'q' to terminate the program\n");
 	printf("- press F1 or 'h' to see help\n");
-	printf("- press 'd' to toggle between solid color and texture coordinates\n");
-	printf("- press '+/-' to increase/decrease tessellation factor (min=%d, max=%d)\n", MIN_TESS, MAX_TESS);
 	printf("- press 'i' to toggle between index buffering and simple vertex buffering\n");
 #ifndef GL_ES_VERSION_2_0
 	printf("- press 'w' to toggle wireframe\n");
 #endif
+	printf("- press 'd' to toggle (tc.xy,0) > (tc.xxx) > (tc.yyy)\n");
+	printf("- press 'r' to rotate the sphere\n");
 	printf("\n");
 }
 
-std::vector<vertex> create_circle_vertices(uint N)
+std::vector<vertex> create_sphere_vertices(uint latitude, uint longitude)
 {
-	std::vector<vertex> v = { { vec3(0), vec3(0,0,-1.0f), vec2(0.5f) } }; // origin
-	for (uint k = 0; k <= N; k++)
+	std::vector<vertex> v;
+	for (uint i = 0; i <= latitude; i++) for (uint j = 0; j <= longitude; j++) 
 	{
-		float t = PI * 2.0f * k / float(N), c = cos(t), s = sin(t);
-		v.push_back({ vec3(c,s,0), vec3(0,0,-1.0f), vec2(c,s) * 0.5f + 0.5f });
+		float t = PI * 1.0f * i / float(latitude), p = PI * 2.0f * j / float(longitude);
+		float st = sin(t), ct = cos(t), sp = sin(p), cp = cos(p);
+		v.push_back({ vec3(st * cp,st * sp,ct),vec3(st * cp, st * sp, ct), vec2(p / 2, PI - t) / PI });
 	}
 	return v;
 }
 
-void update_vertex_buffer(const std::vector<vertex>& vertices, uint N)
+void update_vertex_buffer(const std::vector<vertex>& vertices, uint latitude, uint longitude)
 {
 	static GLuint vertex_buffer = 0;    // ID holder for vertex buffer
 	static GLuint index_buffer = 0;     // ID holder for index buffer
@@ -143,11 +142,15 @@ void update_vertex_buffer(const std::vector<vertex>& vertices, uint N)
 	if (b_index_buffer)
 	{
 		std::vector<uint> indices;
-		for (uint k = 0; k < N; k++)
+		for (uint i = 0; i < latitude; i++) for (uint j = 0; j < longitude; j++)
 		{
-			indices.push_back(0);   // the origin
-			indices.push_back(k + 1);
-			indices.push_back(k + 2);
+			indices.push_back(i * (longitude + 1) + j);
+			indices.push_back((i + 1) * (longitude + 1) + j);
+			indices.push_back(i * (longitude + 1) + j + 1);
+			
+			indices.push_back(i * (longitude + 1) + j + 1);
+			indices.push_back((i + 1) * (longitude + 1) + j);
+			indices.push_back((i + 1) * (longitude + 1) + j + 1);
 		}
 
 		// generation of vertex buffer: use vertices as it is
@@ -163,11 +166,15 @@ void update_vertex_buffer(const std::vector<vertex>& vertices, uint N)
 	else
 	{
 		std::vector<vertex> v; // triangle vertices
-		for (size_t k = 0; k < N; k++)
+		for (uint i = 0; i < latitude; i++) for (uint j = 0; j < longitude; j++)
 		{
-			v.push_back(vertices.front());  // the origin
-			v.push_back(vertices[k + 1]);
-			v.push_back(vertices[k + 2]);
+			v.push_back(vertices[i * (longitude + 1) + j]);
+			v.push_back(vertices[(i + 1) * (longitude + 1) + j]);
+			v.push_back(vertices[i * (longitude + 1) + j + 1]);
+
+			v.push_back(vertices[i * (longitude + 1) + j + 1]);
+			v.push_back(vertices[(i + 1) * (longitude + 1) + j]);
+			v.push_back(vertices[(i + 1) * (longitude + 1) + j + 1]);
 		}
 
 		// generation of vertex buffer: use triangle_vertices instead of vertices
@@ -182,34 +189,36 @@ void update_vertex_buffer(const std::vector<vertex>& vertices, uint N)
 	if (!vertex_array) { printf("%s(): failed to create vertex aray\n", __func__); return; }
 }
 
-void update_tess()
-{
-	uint n = NUM_TESS; if (b.add) n++; if (b.sub) n--;
-	if (n == NUM_TESS || n<MIN_TESS || n>MAX_TESS) return;
-
-	unit_circle_vertices = create_circle_vertices(NUM_TESS = n);
-	update_vertex_buffer(unit_circle_vertices, NUM_TESS);
-	printf("> NUM_TESS = % -4d\r", NUM_TESS);
-}
-
 void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_PRESS)
 	{
 		if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q)    glfwSetWindowShouldClose(window, GL_TRUE);
 		else if (key == GLFW_KEY_H || key == GLFW_KEY_F1)   print_help();
-		else if (key == GLFW_KEY_KP_ADD || (key == GLFW_KEY_EQUAL && (mods & GLFW_MOD_SHIFT)))  b.add = true;
-		else if (key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_MINUS) b.sub = true;
 		else if (key == GLFW_KEY_I)
 		{
 			b_index_buffer = !b_index_buffer;
-			update_vertex_buffer(unit_circle_vertices, NUM_TESS);
+			update_vertex_buffer(unit_circle_vertices, 36, 72);
 			printf("> using %s buffering\n", b_index_buffer ? "index" : "vertex");
 		}
 		else if (key == GLFW_KEY_D)
 		{
-			b_solid_color = !b_solid_color;
-			printf("> using %s\n", b_solid_color ? "solid color" : "texture coordinates as color");
+			u_frag_color_toggle = (u_frag_color_toggle + 1) % 3;
+			switch (u_frag_color_toggle) {
+			case 0: printf("> using (texcoord.xy,0) as color\n"); break;
+			case 1: printf("> using (texcoord.xxx) as color\n"); break;
+			case 2: printf("> using (texcoord.yyy) as color\n"); break;
+			}
+		}
+		else if (key == GLFW_KEY_R)
+		{
+			b_rotate = !b_rotate;
+			if (b_rotate) {
+				glfwTime_bias = (float)glfwGetTime() - glfwTime_bias;
+			}
+			else {
+				glfwTime_bias = t;
+			}
 		}
 #ifndef GL_ES_VERSION_2_0
 		else if (key == GLFW_KEY_W)
@@ -219,11 +228,6 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 			printf("> using %s mode\n", b_wireframe ? "wireframe" : "solid");
 		}
 #endif
-	}
-	else if (action == GLFW_RELEASE)
-	{
-		if (key == GLFW_KEY_KP_ADD || (key == GLFW_KEY_EQUAL && (mods & GLFW_MOD_SHIFT)))   b.add = false;
-		else if (key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_MINUS) b.sub = false;
 	}
 }
 
@@ -248,14 +252,14 @@ bool user_init()
 	// init GL states
 	glLineWidth(1.0f);
 	glClearColor(39 / 255.0f, 40 / 255.0f, 34 / 255.0f, 1.0f);  // set clear color
-	glEnable(GL_CULL_FACE);                            // turn on backface culling
-	glEnable(GL_DEPTH_TEST);                                // turn on depth tests
+	glEnable(GL_CULL_FACE);                                     // turn on backface culling
+	glEnable(GL_DEPTH_TEST);                                    // turn on depth tests
 
 	// define the position of four corner vertices
-	unit_circle_vertices = std::move(create_circle_vertices(NUM_TESS));
+	unit_circle_vertices = std::move(create_sphere_vertices(36, 72));
 
 	// create vertex buffer; called again when index buffering mode is toggled
-	update_vertex_buffer(unit_circle_vertices, NUM_TESS);
+	update_vertex_buffer(unit_circle_vertices, 36, 72);
 
 	return true;
 }
@@ -291,6 +295,4 @@ int main(int argc, char* argv[])
 	// normal termination
 	user_finalize();
 	cg_destroy_window(window);
-
-	return 0;
 }

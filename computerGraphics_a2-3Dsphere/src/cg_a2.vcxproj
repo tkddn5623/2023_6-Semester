@@ -58,11 +58,11 @@
   <ItemGroup>
     <ClInclude Include="cgmath.h" />
     <ClInclude Include="cgut.h" />
-    <ClInclude Include="circle.h" />
+    <ClInclude Include="sphere.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\bin\shaders\circ.frag" />
-    <None Include="..\bin\shaders\circ.vert" />
+    <None Include="..\bin\shaders\sphere.frag" />
+    <None Include="..\bin\shaders\sphere.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

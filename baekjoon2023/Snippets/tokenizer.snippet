@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>C style tokenizer</Title>
+      <Description>C style tokenizer</Description>
+	  <Author>JungSangWoo</Author>
+      <Shortcut>tok</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="Cpp">
+        <![CDATA[#define MAXTOK (999)
+		char* tokens[MAXTOK];
+		int tokens_size;
+		tokens[(tokens_size = 0)] = strtok($BUFNAME$, " ");
+		while (++tokens_size < MAXTOK && (tokens[tokens_size] = strtok(NULL, " ")));]]>
+      </Code>
+	  <Declarations>
+        <Literal>
+          <ID>BUFNAME</ID>
+          <Default>buf</Default>
+        </Literal>
+      </Declarations>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

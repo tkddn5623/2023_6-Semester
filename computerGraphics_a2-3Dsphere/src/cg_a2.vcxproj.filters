@@ -25,15 +25,15 @@
     <ClInclude Include="cgmath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="circle.h">
+    <ClInclude Include="sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\bin\shaders\circ.frag">
+    <None Include="..\bin\shaders\sphere.frag">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="..\bin\shaders\circ.vert">
+    <None Include="..\bin\shaders\sphere.vert">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
