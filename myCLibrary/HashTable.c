@@ -19,7 +19,7 @@ int tiny_hash_i32(unsigned int k) {
 	return (k * 2654435769u) >> (32 - HASH_MSB_BITS);
 }
 int tiny_hash_i64(unsigned long long k) {
-	return (k * 11400714819323198426llu) >> (64 - HASH_MSB_BITS);
+	return (k * 11400714819323198485llu) >> (64 - HASH_MSB_BITS);
 }
 #define HASHBLOCKSIZE (100003)
 int hashing(const char str[]) {
