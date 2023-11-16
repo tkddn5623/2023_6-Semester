@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cgtexture", "cgtexture.vcxproj", "{2B9DE619-A7DB-40B0-8C21-21185B606C3B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2B9DE619-A7DB-40B0-8C21-21185B606C3B}.Release|x64.ActiveCfg = Release|x64
+		{2B9DE619-A7DB-40B0-8C21-21185B606C3B}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AA4E7618-3C88-428E-A0DC-A11BE66E28E5}
+	EndGlobalSection
+EndGlobal
