@@ -13,7 +13,7 @@ static const uint   EDGE_LATITUDE  = 36;
 static const camera	home = camera(vec3(278, 274.4f,-700), vec3(278, 274.4f, 559), vec3(0, 548.8f, 0));
 static const enum	CORNELL_NUM { C_FLOOR, C_CEILING, C_BACK, C_RIGHT, C_LEFT, C_FRONT, } _cn;
 static const int	CORNELL_NUM_OF_WALLS = 6;
-const vec3			CORNELL_COORD[] = {
+static const vec3	CORNELL_COORD[] = {
 	vec3(552.8f,0,0),
 	vec3(0,0,0),
 	vec3(0,0,559.2f),
@@ -23,6 +23,8 @@ const vec3			CORNELL_COORD[] = {
 	vec3(0,548.8f,559.2f),
 	vec3(0,548.8f,0),
 };
+static const float T_CYCLE = 0.01f; // This determines how often to render.
+
 //*************************************
 // window objects
 GLFWwindow* window = nullptr;
@@ -41,8 +43,8 @@ bool    b_wireframe = false;
 #endif
 int     frame = 0;				// index of rendering frames
 float   t = 0.0f;				// current simulation parameter
+float   t_last_render = 0.0f;
 bool    b_index_buffer = true;	// use index buffering?
-bool    b_rotate = false;		// it rotates?
 auto    spheres = std::move(create_sphere());
 float   glfwTime_bias = 0.0f;
 
@@ -59,7 +61,8 @@ std::vector<vertex> unit_cornell_vertices[6];	// cornell vertices
 void update()
 {
 	// update global simulation parameter
-	if (b_rotate) t = (float(glfwGetTime()) - glfwTime_bias);
+	t = (float(glfwGetTime()));
+
 	cam.aspect = window_size.x / float(window_size.y);
 	cam.projection_matrix = mat4::perspective(cam.fovy, cam.aspect, cam.dnear, cam.dfar);
 
@@ -92,6 +95,7 @@ void render()
 		if (b_index_buffer) glDrawElements(GL_TRIANGLES, 2 * EDGE_LATITUDE * EDGE_LONGITUDE * 3, GL_UNSIGNED_INT, nullptr);
 		else                glDrawArrays(GL_TRIANGLES, 0, 2 * EDGE_LATITUDE * EDGE_LONGITUDE * 3); // NUM_TESS = N
 	}
+	conflict_spheres(spheres);
 
 	// Then draw cornell walls
 	for (int i = 0; i < CORNELL_NUM_OF_WALLS; i++) {
@@ -286,8 +290,8 @@ void update_cornell_vertex_buffer(const std::vector<vertex>& vertices, int num)
 		v.push_back(vertices[1]);
 		v.push_back(vertices[2]);
 
+		v.push_back(vertices[0]);
 		v.push_back(vertices[2]);
-		v.push_back(vertices[1]);
 		v.push_back(vertices[3]);
 		// generation of vertex buffer: use triangle_vertices instead of vertices
 		glGenBuffers(1, &vertex_buffer[num]);
@@ -320,6 +324,7 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 		}
 		else if (key == GLFW_KEY_R)
 		{
+			/*
 			b_rotate = !b_rotate;
 			if (b_rotate) {
 				glfwTime_bias = (float)glfwGetTime() - glfwTime_bias;
@@ -327,6 +332,7 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 			else {
 				glfwTime_bias = t;
 			}
+			*/
 		}
 #ifndef GL_ES_VERSION_2_0
 		else if (key == GLFW_KEY_W)
