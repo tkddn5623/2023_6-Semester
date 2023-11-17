@@ -8,9 +8,9 @@
 static const char*  window_name = "a3";
 static const char*  vert_shader_path = "shaders/sphere.vert";
 static const char*  frag_shader_path = "shaders/sphere.frag";
+static const uint   EDGE_LATITUDE = 36;
 static const uint   EDGE_LONGITUDE = 72;
-static const uint   EDGE_LATITUDE  = 36;
-static const camera	home = camera(vec3(278, 274.4f,-700), vec3(278, 274.4f, 559), vec3(0, 548.8f, 0));
+static const camera	home = camera(vec3(278, 274.4f,-680), vec3(278, 274.4f, 559), vec3(0, 548.8f, 0));
 static const enum	CORNELL_NUM { C_FLOOR, C_CEILING, C_BACK, C_RIGHT, C_LEFT, C_FRONT, } _cn;
 static const int	CORNELL_NUM_OF_WALLS = 6;
 static const vec3	CORNELL_COORD[] = {
@@ -41,13 +41,11 @@ GLuint  vertex_array_cornell[6] = { 0 };	// ID holder for cornell VAO
 #ifndef GL_ES_VERSION_2_0
 bool    b_wireframe = false;
 #endif
-int     frame = 0;				// index of rendering frames
-float   t = 0.0f;				// current simulation parameter
-float   t_last_render = 0.0f;
-bool    b_index_buffer = true;	// use index buffering?
-auto    spheres = std::move(create_sphere());
-float   glfwTime_bias = 0.0f;
-
+int     frame			= 0;	// index of rendering frames
+float   t				= 0.0f;	// current simulation parameter
+float   t_last_render	= 0.0f;
+bool    b_index_buffer	= true;	// use index buffering?
+auto    spheres			= std::move(create_sphere());
 //*************************************
 // scene objects
 camera		cam = home;
@@ -61,7 +59,7 @@ std::vector<vertex> unit_cornell_vertices[6];	// cornell vertices
 void update()
 {
 	// update global simulation parameter
-	t = (float(glfwGetTime()));
+	t = float(glfwGetTime());
 
 	cam.aspect = window_size.x / float(window_size.y);
 	cam.projection_matrix = mat4::perspective(cam.fovy, cam.aspect, cam.dnear, cam.dfar);
@@ -92,8 +90,8 @@ void render()
 		uloc = glGetUniformLocation(program, "model_matrix"); if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, s.model_matrix);
 
 		// per-sphere draw calls
-		if (b_index_buffer) glDrawElements(GL_TRIANGLES, 2 * EDGE_LATITUDE * EDGE_LONGITUDE * 3, GL_UNSIGNED_INT, nullptr);
-		else                glDrawArrays(GL_TRIANGLES, 0, 2 * EDGE_LATITUDE * EDGE_LONGITUDE * 3); // NUM_TESS = N
+		if (b_index_buffer) glDrawElements(GL_TRIANGLES, 2 * (EDGE_LATITUDE + 1) * (EDGE_LONGITUDE + 1) * 3, GL_UNSIGNED_INT, nullptr);
+		else                glDrawArrays(GL_TRIANGLES, 0, 2 * (EDGE_LATITUDE + 1) * (EDGE_LONGITUDE + 1) * 3); // NUM_TESS = N
 	}
 	conflict_spheres(spheres);
 
@@ -124,11 +122,10 @@ void print_help()
 	printf("- press ESC or 'q' to terminate the program\n");
 	printf("- press F1 or 'h' to see help\n");
 	printf("- press 'i' to toggle between index buffering and simple vertex buffering\n");
+	printf("- press Home to reset camera\n");
 #ifndef GL_ES_VERSION_2_0
 	printf("- press 'w' to toggle wireframe\n");
 #endif
-	printf("- press 'd' to toggle (tc.xy,0) > (tc.xxx) > (tc.yyy)\n");
-	printf("- press 'r' to rotate the sphere\n");
 	printf("\n");
 }
 
@@ -204,7 +201,7 @@ void update_sphere_vertex_buffer(const std::vector<vertex>& vertices, uint latit
 	if (b_index_buffer)
 	{
 		std::vector<uint> indices;
-		for (uint i = 0; i < latitude; i++) for (uint j = 0; j < longitude; j++)
+		for (uint i = 0; i <= latitude; i++) for (uint j = 0; j <= longitude; j++)
 		{
 			indices.push_back(i * (longitude + 1) + j);
 			indices.push_back((i + 1) * (longitude + 1) + j);
@@ -228,7 +225,7 @@ void update_sphere_vertex_buffer(const std::vector<vertex>& vertices, uint latit
 	else
 	{
 		std::vector<vertex> v; // triangle vertices
-		for (uint i = 0; i < latitude; i++) for (uint j = 0; j < longitude; j++)
+		for (uint i = 0; i <= latitude; i++) for (uint j = 0; j <= longitude; j++)
 		{
 			v.push_back(vertices[i * (longitude + 1) + j]);
 			v.push_back(vertices[(i + 1) * (longitude + 1) + j]);
@@ -322,18 +319,6 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 			}
 			printf("> using %s buffering\n", b_index_buffer ? "index" : "vertex");
 		}
-		else if (key == GLFW_KEY_R)
-		{
-			/*
-			b_rotate = !b_rotate;
-			if (b_rotate) {
-				glfwTime_bias = (float)glfwGetTime() - glfwTime_bias;
-			}
-			else {
-				glfwTime_bias = t;
-			}
-			*/
-		}
 #ifndef GL_ES_VERSION_2_0
 		else if (key == GLFW_KEY_W)
 		{
@@ -351,6 +336,8 @@ void mouse(GLFWwindow* window, int button, int action, int mods)
 	{
 		dvec2 pos; glfwGetCursorPos(window, &pos.x, &pos.y);
 		vec2 npos = cursor_to_ndc(pos, window_size);
+		tb.button = button;
+		tb.mods = mods;
 		if (action == GLFW_PRESS)			tb.begin(cam, npos);
 		else if (action == GLFW_RELEASE)	tb.end();
 	}
@@ -360,7 +347,14 @@ void motion(GLFWwindow* window, double x, double y)
 {
 	if (!tb.is_tracking()) return;
 	vec2 npos = cursor_to_ndc(dvec2(x, y), window_size);
-	cam = tb.update(npos);
+	if (tb.button == GLFW_MOUSE_BUTTON_LEFT && tb.mods == 0)
+		cam = tb.update(npos);
+	else if (tb.button == GLFW_MOUSE_BUTTON_MIDDLE ||
+		(tb.button == GLFW_MOUSE_BUTTON_LEFT && (tb.mods & GLFW_MOD_CONTROL)))
+		cam = tb.update_pan(npos);
+	else if (tb.button == GLFW_MOUSE_BUTTON_RIGHT ||
+		(tb.button == GLFW_MOUSE_BUTTON_LEFT && (tb.mods & GLFW_MOD_SHIFT)))
+		cam = tb.update_zoom(npos);
 }
 
 bool user_init()

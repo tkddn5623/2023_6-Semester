@@ -9,6 +9,7 @@ struct sphere_t
 	float   phi = 0.0f;         // rotation angle
 	vec4    color;              // RGBA color in [0,1]
 	vec3	velocity = vec3(0); // Return of velocity of A1!
+	float	t_last_render = 0;
 	mat4    model_matrix;       // modeling transformation
 
 	// public functions
@@ -28,24 +29,22 @@ inline std::vector<sphere_t> create_sphere(int num = 9)
 	std::vector<sphere_t> spheres;
 	sphere_t s;
 	for (int i = 0; i < num; i++) {
-		s.radius = 10.0f * (i + 1);
+		s.radius = 7.0f * (i + 1);
 		bool retry;
 		do {
 			retry = false;
 			float bias = s.radius * 1.1f;
-			s.center = vec3(randf(500 - 2 * bias, 0) + bias, randf(500 - 2 * bias, 0) + bias, randf(500 - 2 * bias, 0) + bias);
+			s.center = vec3(randf(480 - 2 * bias, 0) + bias, randf(480 - 2 * bias, 0) + bias, randf(480 - 2 * bias, 0) + bias);
 			for (int j = 0; j < i; j++) {
 				sphere_t& s_temp = spheres.at(j);
 				float dist = (s.center - s_temp.center).length();
-				if (dist * 0.8 <= s.radius + s_temp.radius) { retry = true; break; }
+				if (dist * 0.7 <= s.radius + s_temp.radius) { retry = true; break; }
 			}
 		} while (retry);
 		s.velocity = vec3(randf(0.05f, 1), randf(0.04f, 1), randf(0.03f, 1));
 		//c.last_update_time = glfwTime;
 		spheres.push_back(s);
 	}
-	spheres.emplace_back(s);
-
 	return spheres;
 }
 
@@ -53,7 +52,12 @@ inline void sphere_t::update(float p)
 {
 	phi = p;
 	float c = cos(phi), s = sin(phi);
-	center += velocity;
+
+	// The animation should use timestamps instead of the frame counter
+	if (phi - t_last_render >= 0.0005f) {
+		t_last_render = phi;
+		center += velocity;
+	}
 
 	// these transformations will be explained in later transformation lecture
 	mat4 scale_matrix =
@@ -80,7 +84,8 @@ inline void sphere_t::update(float p)
 		0, 0, 0, 1
 	};
 
-	model_matrix = translate_matrix * rotation_matrix * scale_matrix;
+	// model_matrix = translate_matrix * rotation_matrix * scale_matrix;
+	model_matrix = translate_matrix * scale_matrix;
 }
 
 inline void conflict_spheres(std::vector<sphere_t>& spheres) { // A1: Elastic collision ( every after update() )
