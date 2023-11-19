@@ -104,7 +104,7 @@ inline camera trackball::update_zoom(vec2 m) const
 	camera c = cam0;
 	vec3 n = (c.eye - c.at).normalize();
 
-	c.eye = c.eye - (n * p1.y);	
+	c.eye = c.eye + (n * p1.y);	
 	c.view_matrix = mat4::look_at(c.eye, c.at, c.up);
 
 	return c;

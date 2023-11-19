@@ -332,7 +332,7 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 
 void mouse(GLFWwindow* window, int button, int action, int mods)
 {
-	if (button == GLFW_MOUSE_BUTTON_LEFT)
+	if (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT || button == GLFW_MOUSE_BUTTON_MIDDLE)
 	{
 		dvec2 pos; glfwGetCursorPos(window, &pos.x, &pos.y);
 		vec2 npos = cursor_to_ndc(pos, window_size);
