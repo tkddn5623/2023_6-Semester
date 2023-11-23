@@ -61,11 +61,12 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# .vs and .vscode temp file
+# .vs, .gdb, and .vscode temp file
 .vs/
 .vscode/
 .idea/
 x64/
+.gdb_history
 
 # exercises
 _exercise/

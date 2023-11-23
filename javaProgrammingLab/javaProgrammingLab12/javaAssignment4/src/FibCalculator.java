@@ -1,4 +1,7 @@
-public class FibCalculator {
+import javax.swing.*;
+import java.util.ArrayList;
+
+public class FibCalculator extends SwingWorker<ArrayList<String>, String> {
     private int series_first;
     private int series_second;
 
@@ -7,8 +10,15 @@ public class FibCalculator {
         setSeries_second(second);
     }
 
-    public int getSeries(int length) {
-    return 0;
+    public ArrayList<String> doInBackground(int length) {
+        ArrayList<String> list = new ArrayList<String>();
+        int last = getSeries_second();
+        publish(Integer.toString(getSeries_first()));
+        publish(Integer.toString(last));
+        for (int i = 0; i < length - 2; i++) {
+
+        }
+        return list;
     }
 
     public void setSeries_first(int series_first) {

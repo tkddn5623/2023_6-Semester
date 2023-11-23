@@ -6,22 +6,6 @@ import java.util.ArrayList;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
-    static final private String[] helpString = {
-            //@formatter:off
-            "Choose transport (from left menu):\n",
-            "Add more transport (from right menu)?",
-            "You choose TAXI\n" + "Enter base fare: ",
-            "Enter fare per km: ",
-            "Enter distance (in KM): ",
-            "You choose BUS\n" + "Enter base fare: ",
-            "Enter fare per station (for extra stations): ",
-            "Enter number of stations: ",
-            "You choose TRAIN\n" + "Enter base fare: ",
-            "Enter fare per station (for extra stations): ",
-            "Enter number of stations: ",
-            //@formatter:on
-    };
-
     public MainFrame() {
         // Initialization about GUI
         setResizable(false);
@@ -49,6 +33,7 @@ public class MainFrame extends JFrame {
         panel_1.add(btnGet);
 
         JButton btnCancel = new JButton("Cancel");
+        btnCancel.setEnabled(false);
         panel_1.add(btnCancel);
 
         JPanel panel_2 = new JPanel();
@@ -56,7 +41,7 @@ public class MainFrame extends JFrame {
         panel_2.setMinimumSize((new Dimension((int) getBounds().getWidth(), 300)));
         panel_0.add(panel_2);
 
-        JTextArea textOutput = new JTextArea("222222");
+        JTextArea textOutput = new JTextArea();
         textOutput.setEditable(false);
         panel_2.add(textOutput);
 
@@ -65,31 +50,33 @@ public class MainFrame extends JFrame {
         panel_0.add(panel_3);
 
         JProgressBar progressBar = new JProgressBar();
-        progressBar.setValue(0.7);
+        progressBar.setPreferredSize(new Dimension(100,25));
+//        progressBar.setValue();
         panel_3.add(progressBar);
 
-        JLabel labelSum = new JLabel("~!~!~!~");
-        labelSum.setMinimumSize(new Dimension(60, 1));
+        JLabel labelSum = new JLabel();
+        labelSum.setPreferredSize((new Dimension(60, 25)));
         panel_3.add(labelSum);
 
         setVisible(true);
 
-        // Initialization about Listeners
-        /*
-        btnNewButton_0.addMouseListener(new MouseAdapter() {
+        // Initialization about Listener
+        btnGet.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
-                numberHandle(0);
+                if (!textInput.getText().matches("[0-9]+")){
+                    JOptionPane.showMessageDialog(getContentPane(), "Enter valid input! (3~20)");
+                    return;
+                }
+                int n = Integer.parseInt(textInput.getText());
+                if (n < 3 || n > 20) {
+                    JOptionPane.showMessageDialog(getContentPane(), "Enter valid input! (3~20)");
+                    return;
+                }
+                SwingWorker<ArrayList<Integer>, Integer> sw;
+
+
+
             }
         });
-        btnNewButton_CANCEL.addMouseListener(new MouseAdapter() {
-            public void mouseReleased(MouseEvent e) {
-                state = 0;
-                number = 0;
-                transportList.clear();
-                textArea.setText("Cancelled!\n New Plan:\n");
-                textArea.append(helpString[state]);
-            }
-        });
-        */
     }
 }
