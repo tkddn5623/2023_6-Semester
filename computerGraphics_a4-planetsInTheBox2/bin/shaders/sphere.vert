@@ -12,13 +12,8 @@ uniform mat4	model_matrix;	// 4x4 transformation matrix: explained later in the 
 uniform mat4	view_matrix;
 uniform mat4	projection_matrix;
 
-uniform mat4	view_projection_matrix;
-
 void main()
 {
-	// gl_Position = view_projection_matrix * model_matrix * vec4(position,1);
-	// gl_Position = model_matrix * vec4(position,1);
-
 	vec4 wpos = model_matrix * vec4(position,1);
 	vec4 epos = view_matrix * wpos;
 	gl_Position = projection_matrix * epos;
