@@ -1,11 +1,12 @@
 #include "cgmath.h"     // slee's simple math library
 #include "cgut.h"       // slee's OpenGL utility
+#include "light.h"      // cg_a4 header
 #include "sphere.h"     // circle class definition
 #include "trackball.h"	// virtual trackball
 
 //*************************************
 // global constants
-static const char*  window_name = "a3";
+static const char*  window_name = "a4";
 static const char*  vert_shader_path = "shaders/sphere.vert";
 static const char*  frag_shader_path = "shaders/sphere.frag";
 static const uint   EDGE_LATITUDE = 36;
@@ -23,7 +24,6 @@ static const vec3	CORNELL_COORD[] = {
 	vec3(0,548.8f,559.2f),
 	vec3(0,548.8f,0),
 };
-static const float T_CYCLE = 0.01f; // This determines how often to render.
 
 //*************************************
 // window objects
@@ -43,13 +43,23 @@ bool    b_wireframe = false;
 #endif
 int     frame			= 0;	// index of rendering frames
 float   t				= 0.0f;	// current simulation parameter
-float   t_last_render	= 0.0f;
 bool    b_index_buffer	= true;	// use index buffering?
 auto    spheres			= std::move(create_sphere());
 //*************************************
 // scene objects
 camera		cam = home;
 trackball	tb;
+light_t		light;
+material_t	material_sphere;
+material_t	material_wall[6] = {
+	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.725f,0.710f,0.680f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
+	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.725f,0.710f,0.680f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
+	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.725f,0.710f,0.680f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
+	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.137f,0.447f,0.090f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
+	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.630f,0.065f,0.050f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
+	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.725f,0.710f,0.680f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
+	
+};
 
 // holder of vertices and indices of a unit circle
 std::vector<vertex> unit_circle_vertices;		// host-side vertices
@@ -61,12 +71,19 @@ void update()
 	// update global simulation parameter
 	t = float(glfwGetTime());
 
+	// update projection matrix
 	cam.aspect = window_size.x / float(window_size.y);
 	cam.projection_matrix = mat4::perspective(cam.fovy, cam.aspect, cam.dnear, cam.dfar);
 
 	GLint uloc;
 	uloc = glGetUniformLocation(program, "view_matrix");		if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, cam.view_matrix);
 	uloc = glGetUniformLocation(program, "projection_matrix");	if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, cam.projection_matrix);
+
+	// setup light properties
+	glUniform4fv(glGetUniformLocation(program, "light_position"), 1, light.position);
+	glUniform4fv(glGetUniformLocation(program, "Ia"), 1, light.ambient);
+	glUniform4fv(glGetUniformLocation(program, "Id"), 1, light.diffuse);
+	glUniform4fv(glGetUniformLocation(program, "Is"), 1, light.specular);
 }
 
 void render()
@@ -81,6 +98,15 @@ void render()
 
 	// Draw sphere first.
 	glBindVertexArray(vertex_array_sphere);
+
+	// setup frag_color mode
+	uloc = glGetUniformLocation(program, "color_mode"); if (uloc > -1) glUniform1i(uloc, 0);
+
+	// setup material properties
+	glUniform4fv(glGetUniformLocation(program, "Ka"), 1, material_sphere.ambient);
+	glUniform4fv(glGetUniformLocation(program, "Kd"), 1, material_sphere.diffuse);
+	glUniform4fv(glGetUniformLocation(program, "Ks"), 1, material_sphere.specular);
+	glUniform1f(glGetUniformLocation(program, "shininess"), material_sphere.shininess);
 	for (auto& s : spheres)
 	{
 		// per-sphere update
@@ -91,16 +117,26 @@ void render()
 
 		// per-sphere draw calls
 		if (b_index_buffer) glDrawElements(GL_TRIANGLES, 2 * (EDGE_LATITUDE + 1) * (EDGE_LONGITUDE + 1) * 3, GL_UNSIGNED_INT, nullptr);
-		else                glDrawArrays(GL_TRIANGLES, 0, 2 * (EDGE_LATITUDE + 1) * (EDGE_LONGITUDE + 1) * 3); // NUM_TESS = N
+		else                glDrawArrays(GL_TRIANGLES, 0, 2 * (EDGE_LATITUDE + 1) * (EDGE_LONGITUDE + 1) * 3); 
 	}
 	conflict_spheres(spheres);
 
+
+	// setup frag_color mode
+	uloc = glGetUniformLocation(program, "color_mode"); if (uloc > -1) glUniform1i(uloc, 1);
+
 	// Then draw cornell walls
 	for (int i = 0; i < CORNELL_NUM_OF_WALLS; i++) {
+		// setup material properties
+		glUniform4fv(glGetUniformLocation(program, "Ka"), 1, material_wall[i].ambient);
+		glUniform4fv(glGetUniformLocation(program, "Kd"), 1, material_wall[i].diffuse);
+		glUniform4fv(glGetUniformLocation(program, "Ks"), 1, material_wall[i].specular);
+		glUniform1f(glGetUniformLocation(program, "shininess"), material_wall[i].shininess);
+
 		glBindVertexArray(vertex_array_cornell[i]);
 		uloc = glGetUniformLocation(program, "model_matrix"); if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, mat4::identity());
 		if (b_index_buffer) glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-		else                glDrawArrays(GL_TRIANGLES, 0, 6); // NUM_TESS = N
+		else                glDrawArrays(GL_TRIANGLES, 0, 6); 
 	}
 
 

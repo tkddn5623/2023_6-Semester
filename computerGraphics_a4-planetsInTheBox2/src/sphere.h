@@ -4,14 +4,12 @@
 
 struct sphere_t
 {
-	vec3    center = vec3(0);   // 3D position for translation
-	float   radius = 10.0f;     // radius
-	float   phi = 0.0f;         // rotation angle
-	vec4    color;              // RGBA color in [0,1]
-	vec3	velocity = vec3(0); // Return of velocity of A1!
-	float	t_last_render = 0;
-	mat4    model_matrix;       // modeling transformation
-
+	vec3		center = vec3(0);   // 3D position for translation
+	float		radius = 10.0f;     // radius
+	float		phi = 0.0f;         // rotation angle
+	vec3		velocity = vec3(0); // Return of velocity of A1!
+	//material_t	material;			// cg_a4
+	mat4		model_matrix;       // modeling transformation
 	// public functions
 	void    update(float t);
 };
@@ -53,11 +51,7 @@ inline void sphere_t::update(float p)
 	phi = p;
 	float c = cos(phi), s = sin(phi);
 
-	// The animation should use timestamps instead of the frame counter
-	if (phi - t_last_render >= 0.0005f) {
-		t_last_render = phi;
-		center += velocity;
-	}
+	center += velocity;
 
 	// these transformations will be explained in later transformation lecture
 	mat4 scale_matrix =
