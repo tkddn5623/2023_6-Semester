@@ -12,7 +12,6 @@ out vec2 tc;	// the third output: not used yet
 uniform mat4	model_matrix;	// 4x4 transformation matrix: explained later in the lecture
 uniform mat4	view_matrix;
 uniform mat4	projection_matrix;
-uniform int		color_mode;		// Color mode
 
 void main()
 {
@@ -21,7 +20,8 @@ void main()
 	gl_Position = projection_matrix * epos;
 
 	// pass eye-space normal and tc to fragment shader
-	// norm = normalize(mat3(view_matrix*model_matrix)*normal);
+	norm = normalize(mat3(view_matrix*model_matrix)*normal);
 	tc = texcoord;
-	norm = normal;
+
+	//norm = normal;
 }

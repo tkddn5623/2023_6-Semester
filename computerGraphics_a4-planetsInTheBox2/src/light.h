@@ -5,7 +5,7 @@
 struct light_t
 {
 	vec4	position = vec4(278.0f, 278.0f, 0.1f, 1.0f);
-	vec4	ambient = vec4(0.2f, 0.2f, 0.2f, 1.0f);
+	vec4	ambient = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	vec4	diffuse = vec4(0.78f, 0.78f, 0.78f, 1.0f);
 	vec4	specular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 };
@@ -16,6 +16,12 @@ struct material_t
 	vec4	diffuse = vec4(0.8f, 0.8f, 0.8f, 1.0f);
 	vec4	specular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	float	shininess = 1000.0f;
+};
+
+struct ray_t
+{
+	vec3 pos; // start position
+	vec3 dir; // ray direction
 };
 
 #endif

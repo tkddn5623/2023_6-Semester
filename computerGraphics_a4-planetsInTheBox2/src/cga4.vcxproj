@@ -60,6 +60,7 @@
     <ClInclude Include="cgut.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="sphere.h" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="trackball.h" />
   </ItemGroup>
   <ItemGroup>

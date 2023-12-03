@@ -45,12 +45,17 @@ int     frame			= 0;	// index of rendering frames
 float   t				= 0.0f;	// current simulation parameter
 bool    b_index_buffer	= true;	// use index buffering?
 auto    spheres			= std::move(create_sphere());
+GLuint	tex_num[9]		= { 0 };
 //*************************************
 // scene objects
 camera		cam = home;
 trackball	tb;
-light_t		light;
-material_t	material_sphere;
+light_t		light = {
+	vec4(278.0f,278.0f,0.1f,1.0f), vec4(0.0f,0.0f,0.0f,1.0f), vec4(0.78f,0.78f,0.78f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f)
+};
+material_t	material_sphere = {
+	vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.8f,0.8f,0.8f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f
+};
 material_t	material_wall[6] = {
 	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.725f,0.710f,0.680f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
 	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.725f,0.710f,0.680f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
@@ -58,7 +63,6 @@ material_t	material_wall[6] = {
 	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.137f,0.447f,0.090f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
 	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.630f,0.065f,0.050f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
 	{vec4(0.2f,0.2f,0.2f,1.0f), vec4(0.725f,0.710f,0.680f,1.0f), vec4(1.0f,1.0f,1.0f,1.0f), 1000.0f},
-	
 };
 
 // holder of vertices and indices of a unit circle
@@ -84,6 +88,20 @@ void update()
 	glUniform4fv(glGetUniformLocation(program, "Ia"), 1, light.ambient);
 	glUniform4fv(glGetUniformLocation(program, "Id"), 1, light.diffuse);
 	glUniform4fv(glGetUniformLocation(program, "Is"), 1, light.specular);
+
+	// uniform planet vector (cg_a4)
+	std::vector<float> planet_v;
+	uloc = glGetUniformLocation(program, "planet");
+	if (uloc > -1) {
+		for (auto& s : spheres) {
+			planet_v.push_back(s.center.x);
+			planet_v.push_back(s.center.y);
+			planet_v.push_back(s.center.z);
+			planet_v.push_back(s.radius);
+		}
+		glUniform4fv(uloc, (GLsizei)spheres.size(), &planet_v[0]);
+	}
+	uloc = glGetUniformLocation(program, "planet_size"); if (uloc > -1) glUniform1i(uloc, (int)spheres.size());
 }
 
 void render()
@@ -99,21 +117,28 @@ void render()
 	// Draw sphere first.
 	glBindVertexArray(vertex_array_sphere);
 
-	// setup frag_color mode
-	uloc = glGetUniformLocation(program, "color_mode"); if (uloc > -1) glUniform1i(uloc, 0);
-
 	// setup material properties
 	glUniform4fv(glGetUniformLocation(program, "Ka"), 1, material_sphere.ambient);
 	glUniform4fv(glGetUniformLocation(program, "Kd"), 1, material_sphere.diffuse);
 	glUniform4fv(glGetUniformLocation(program, "Ks"), 1, material_sphere.specular);
 	glUniform1f(glGetUniformLocation(program, "shininess"), material_sphere.shininess);
+
+	int idx = 0;
 	for (auto& s : spheres)
 	{
 		// per-sphere update
 		s.update(t);
 
 		// update per-sphere uniforms
+		uloc = glGetUniformLocation(program, "planet_idx"); if (uloc > -1) glUniform1i(uloc, idx);
 		uloc = glGetUniformLocation(program, "model_matrix"); if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, s.model_matrix);
+
+		// setup texture
+		glActiveTexture(GL_TEXTURE0);								// select the texture slot to bind
+		glBindTexture(GL_TEXTURE_2D, tex_num[idx]);
+		glUniform1i(glGetUniformLocation(program, "TEX"), 0);		// GL_TEXTURE0
+
+		idx++;
 
 		// per-sphere draw calls
 		if (b_index_buffer) glDrawElements(GL_TRIANGLES, 2 * (EDGE_LATITUDE + 1) * (EDGE_LONGITUDE + 1) * 3, GL_UNSIGNED_INT, nullptr);
@@ -122,8 +147,8 @@ void render()
 	conflict_spheres(spheres);
 
 
-	// setup frag_color mode
-	uloc = glGetUniformLocation(program, "color_mode"); if (uloc > -1) glUniform1i(uloc, 1);
+	// let shader thinks it is a wall
+	uloc = glGetUniformLocation(program, "planet_idx"); if (uloc > -1) glUniform1i(uloc, -1);
 
 	// Then draw cornell walls
 	for (int i = 0; i < CORNELL_NUM_OF_WALLS; i++) {
@@ -180,42 +205,49 @@ std::vector<vertex> create_sphere_vertices(uint latitude, uint longitude)
 std::vector<vertex> create_cornell_vertices(uint num)
 {
 	std::vector<vertex> v;
+	vec3 norm;
 	switch (num) {
 	case C_FLOOR:
-		v.push_back({ CORNELL_COORD[0],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[1],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[2],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[3],vec3(0.725f,0.710f,0.680f),vec2(0) });
+		norm = (CORNELL_COORD[2] - CORNELL_COORD[1]).cross(CORNELL_COORD[0] - CORNELL_COORD[1]).normalize();
+		v.push_back({ CORNELL_COORD[0],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[1],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[2],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[3],norm,vec2(0) });
 		break;
 	case C_CEILING:
-		v.push_back({ CORNELL_COORD[4],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[5],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[6],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[7],vec3(0.725f,0.710f,0.680f),vec2(0) });
+		norm = (CORNELL_COORD[6] - CORNELL_COORD[5]).cross(CORNELL_COORD[4] - CORNELL_COORD[5]).normalize();
+		v.push_back({ CORNELL_COORD[4],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[5],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[6],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[7],norm,vec2(0) });
 		break;
 	case C_BACK:
-		v.push_back({ CORNELL_COORD[3],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[2],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[6],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[5],vec3(0.725f,0.710f,0.680f),vec2(0) });
+		norm = (CORNELL_COORD[6] - CORNELL_COORD[2]).cross(CORNELL_COORD[3] - CORNELL_COORD[2]).normalize();
+		v.push_back({ CORNELL_COORD[3],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[2],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[6],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[5],norm,vec2(0) });
 		break;
 	case C_RIGHT:
-		v.push_back({ CORNELL_COORD[2],vec3(0.137f,0.447f,0.090f),vec2(0) });
-		v.push_back({ CORNELL_COORD[1],vec3(0.137f,0.447f,0.090f),vec2(0) });
-		v.push_back({ CORNELL_COORD[7],vec3(0.137f,0.447f,0.090f),vec2(0) });
-		v.push_back({ CORNELL_COORD[6],vec3(0.137f,0.447f,0.090f),vec2(0) });
+		norm = (CORNELL_COORD[7] - CORNELL_COORD[1]).cross(CORNELL_COORD[2] - CORNELL_COORD[1]).normalize();
+		v.push_back({ CORNELL_COORD[2],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[1],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[7],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[6],norm,vec2(0) });
 		break;
 	case C_LEFT:
-		v.push_back({ CORNELL_COORD[0],vec3(0.630f, 0.065f, 0.050f),vec2(0) });
-		v.push_back({ CORNELL_COORD[3],vec3(0.630f, 0.065f, 0.050f),vec2(0) });
-		v.push_back({ CORNELL_COORD[5],vec3(0.630f, 0.065f, 0.050f),vec2(0) });
-		v.push_back({ CORNELL_COORD[4],vec3(0.630f, 0.065f, 0.050f),vec2(0) });
+		norm = (CORNELL_COORD[5] - CORNELL_COORD[3]).cross(CORNELL_COORD[0] - CORNELL_COORD[3]).normalize();
+		v.push_back({ CORNELL_COORD[0],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[3],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[5],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[4],norm,vec2(0) });
 		break;
 	case C_FRONT:
-		v.push_back({ CORNELL_COORD[1],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[0],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[4],vec3(0.725f,0.710f,0.680f),vec2(0) });
-		v.push_back({ CORNELL_COORD[7],vec3(0.725f,0.710f,0.680f),vec2(0) });
+		norm = (CORNELL_COORD[4] - CORNELL_COORD[0]).cross(CORNELL_COORD[1] - CORNELL_COORD[0]).normalize();
+		v.push_back({ CORNELL_COORD[1],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[0],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[4],norm,vec2(0) });
+		v.push_back({ CORNELL_COORD[7],norm,vec2(0) });
 		break;
 	}
 	return v;
@@ -409,11 +441,20 @@ bool user_init()
 
 	// create vertex buffer; called again when index buffering mode is toggled
 	update_sphere_vertex_buffer(unit_circle_vertices, 36, 72);
-
 	for (int i = 0; i < CORNELL_NUM_OF_WALLS; i++) {
 		unit_cornell_vertices[i] = std::move(create_cornell_vertices(i));
 		update_cornell_vertex_buffer(unit_cornell_vertices[i], i);
 	}
+	// load texture
+	tex_num[0] = cg_create_texture("textures/mercury.jpg", true);
+	tex_num[1] = cg_create_texture("textures/venus.jpg", true);
+	tex_num[2] = cg_create_texture("textures/earth.jpg", true);
+	tex_num[3] = cg_create_texture("textures/mars.jpg", true);
+	tex_num[4] = cg_create_texture("textures/jupiter.jpg", true);
+	tex_num[5] = cg_create_texture("textures/saturn.jpg", true);
+	tex_num[6] = cg_create_texture("textures/uranus.jpg", true);
+	tex_num[7] = cg_create_texture("textures/neptune.jpg", true);
+	tex_num[8] = cg_create_texture("textures/sun.jpg", true);
 
 	return true;
 }
