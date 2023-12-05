@@ -18,7 +18,7 @@ ArrayHeap* AH_new(int max) {
     if ((pheap->nodes = calloc(max + 1, sizeof(HNode))) == NULL) exit(1);
     return pheap;
 }
-void AH_deleteHeap(ArrayHeap* pheap) {
+void AH_delete(ArrayHeap* pheap) {
     free(pheap->nodes);
     free(pheap);
 }

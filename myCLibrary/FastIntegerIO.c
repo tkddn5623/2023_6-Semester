@@ -19,6 +19,12 @@ int readint() {
 	for (b = a & 0xf; (a = *in++) >= '0'; b = b * 10 + (a & 0xf));
 	return b;
 }
+void IOinit() {
+	struct stat st;
+	fstat(0, &st);
+	if ((in = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, 0, 0)) == MAP_FAILED)
+		_exit(1);
+}
 /*
 static char* in;
 static struct {
