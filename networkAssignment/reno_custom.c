@@ -2,24 +2,24 @@
 #include <linux/kernel.h>
 #include <net/tcp.h>
 
-void tcp_reno_init(struct sock *sk)
+void tcp_reno_init(struct sock* sk)
 {
     /* Initialize congestion control specific variables here */
     tcp_sk(sk)->snd_ssthresh = TCP_INFINITE_SSTHRESH; // Typically, this is a high value
-    tcp_sk(sk)->snd_cwnd = 1; // Start with a congestion window of 1
+    tcp_sk(sk)->snd_cwnd = 10; // Start with a congestion window of 1
 }
 
-u32 tcp_reno_ssthresh(struct sock *sk)
+u32 tcp_reno_ssthresh(struct sock* sk)
 {
-    /* Halve the congestion window, min 2 */
-    const struct tcp_sock *tp = tcp_sk(sk);
-    return max(tp->snd_cwnd >> 1U, 2U);
+    /* Halve the congestion window, min 4 */
+    const struct tcp_sock* tp = tcp_sk(sk);
+    return max(2 * tp->snd_cwnd / 3, 1U);
 }
 
-void tcp_reno_cong_avoid(struct sock *sk, u32 ack, u32 acked)
+void tcp_reno_cong_avoid(struct sock* sk, u32 ack, u32 acked)
 {
-    struct tcp_sock *tp = tcp_sk(sk);
-    printk(KERN_INFO "tp->snd_cwnd is %d\n", tp->snd_cwnd);
+    struct tcp_sock* tp = tcp_sk(sk);
+    // printk(KERN_INFO "tp->snd_cwnd is %d\n", tp->snd_cwnd);
 
     if (!tcp_is_cwnd_limited(sk))
         return;
@@ -29,7 +29,8 @@ void tcp_reno_cong_avoid(struct sock *sk, u32 ack, u32 acked)
         acked = tcp_slow_start(tp, acked);
         if (!acked)
             return;
-    } else {
+    }
+    else {
         /* In "congestion avoidance", cwnd is increased by 1 full packet
          * per round-trip time (RTT), which is approximated here by the number of
          * ACKed packets divided by the current congestion window. */
@@ -40,7 +41,7 @@ void tcp_reno_cong_avoid(struct sock *sk, u32 ack, u32 acked)
     tp->snd_cwnd = min(tp->snd_cwnd, tp->snd_cwnd_clamp);
 }
 
-u32 tcp_reno_undo_cwnd(struct sock *sk)
+u32 tcp_reno_undo_cwnd(struct sock* sk)
 {
     /* Undo the cwnd changes during congestion avoidance if needed */
     return tcp_sk(sk)->snd_cwnd;
@@ -48,13 +49,13 @@ u32 tcp_reno_undo_cwnd(struct sock *sk)
 
 /* This structure contains the hooks to our congestion control algorithm */
 static struct tcp_congestion_ops tcp_reno_custom = {
-    .init           = tcp_reno_init,
-    .ssthresh       = tcp_reno_ssthresh,
-    .cong_avoid     = tcp_reno_cong_avoid,
-    .undo_cwnd      = tcp_reno_undo_cwnd,
+    .init = tcp_reno_init,
+    .ssthresh = tcp_reno_ssthresh,
+    .cong_avoid = tcp_reno_cong_avoid,
+    .undo_cwnd = tcp_reno_undo_cwnd,
 
-    .owner          = THIS_MODULE,
-    .name           = "reno_custom",
+    .owner = THIS_MODULE,
+    .name = "reno_custom",
 };
 
 /* Initialization function of this module */
