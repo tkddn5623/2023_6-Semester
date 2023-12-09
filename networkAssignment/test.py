@@ -1,6 +1,6 @@
 from mininet.net import Mininet
 from mininet.topo import Topo
-from mininet.node import OVSKernelSwitch    
+from mininet.node import OVSKernelSwitch
 from mininet.cli import CLI
 from mininet.node import Host
 from mininet.log import setLogLevel, info
@@ -16,11 +16,12 @@ class MyTopology(Topo):
             h = self.addHost(f"h{i}", cls=Host, defaultRoute=None)
             self.addLink(h, s0, cls=TCLink, bw=10000000, delay="0.1ms", loss=0.001)
 
+
 def main():
     topo = MyTopology()
     net = Mininet(topo=topo, autoSetMacs=True, build=False, ipBase="10.0.0.0/24")
 
-#    net.build()
+    # net.build()
     net.start()
 
     for i in range(10):
@@ -33,6 +34,7 @@ def main():
     info(s_bw)
     # CLI(net)
     net.stop()
+
 
 if __name__ == "__main__":
     setLogLevel("info")
