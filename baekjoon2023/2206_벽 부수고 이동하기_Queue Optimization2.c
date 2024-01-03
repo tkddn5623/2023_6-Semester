@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define MAXN (1000)
-#define QUEUE_CAPACITY (1 << 19)
 #define INF (100000000)
 
 typedef struct {
@@ -11,15 +10,18 @@ typedef struct {
 
 typedef struct {
 	Nodeinfo* items;
-	//int capacity;
+	int capacity;
 	int front;
 	int rear;
 } ArrayQueue;
 
-ArrayQueue* AQ_new() {
+ArrayQueue* AQ_new(int required_size) {
 	ArrayQueue* pqueue;
+	int capacity;
+	for (int i = 4; (capacity = 1 << i) < required_size; i++);
 	if (!(pqueue = calloc(1, sizeof(ArrayQueue)))) exit(1);
-	if (!(pqueue->items = calloc(QUEUE_CAPACITY, sizeof(Nodeinfo)))) exit(1);
+	if (!(pqueue->items = calloc(capacity, sizeof(Nodeinfo)))) exit(1);
+	pqueue->capacity = capacity;
 	return pqueue;
 }
 void AQ_delete(ArrayQueue* pqueue) {
@@ -35,18 +37,18 @@ Nodeinfo AQ_front(ArrayQueue* pqueue) {
 void AQ_push(ArrayQueue* pqueue, Nodeinfo item) {
 	const int rear = pqueue->rear;
 	pqueue->items[rear] = item;
-	pqueue->rear = (rear + 1) & (QUEUE_CAPACITY - 1);
+	pqueue->rear = (rear + 1) & (pqueue->capacity - 1);
 }
 Nodeinfo AQ_pop(ArrayQueue* pqueue) {
 	const int front = pqueue->front;
-	pqueue->front = (front + 1) & (QUEUE_CAPACITY - 1);
+	pqueue->front = (front + 1) & (pqueue->capacity - 1);
 	return pqueue->items[front];
 }
 void solve2206(const char wall[][MAXN + 3], const int sz_row, const int sz_col) {
 	static const int dx[4] = { +1, -1, 0, 0 };
 	static const int dy[4] = { 0, 0, +1, -1 };
 	static int dist[MAXN + 1][MAXN + 1];
-	ArrayQueue* que = AQ_new();
+	ArrayQueue* que = AQ_new(0x20000);
 	int state = -1;
 
 	for (int i = 0; i < sz_row; i++) for (int j = 0; j < sz_col; j++) {
