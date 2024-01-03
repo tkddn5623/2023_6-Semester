@@ -39,6 +39,11 @@ Element AQ_pop(ArrayQueue* pqueue) {
 	return pqueue->items[front];
 }
 
+
+int AQ_isFull(ArrayQueue* pqueue) {
+	return pqueue->front == (pqueue->rear + 1) & (pqueue->capacity - 1);
+}
+
 /*
 * 2024-01-04 Thu
 * The optimized Queue
