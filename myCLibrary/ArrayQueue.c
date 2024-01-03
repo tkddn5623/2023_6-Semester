@@ -11,7 +11,8 @@ typedef struct {
 ArrayQueue* AQ_new(int max) {
 	ArrayQueue* pqueue;
 	if (!(pqueue = calloc(1, sizeof(ArrayQueue)))) exit(1);
-	if (!(pqueue->items = calloc(max, sizeof(Element)))) exit(1);
+	if (!(pqueue->items = calloc(max + 1, sizeof(Element)))) exit(1);
+	pqueue->capacity = max + 1;
 	return pqueue;
 }
 void AQ_delete(ArrayQueue* pqueue) {
