@@ -1,91 +1,79 @@
 #include <stdlib.h>
-#include "ArrayHeap.h"
-/*
-typedef int Element;
+
+// Version 1: Struct heap
 typedef struct {
-    Element item;
-    int priority;
-} HNode;
+	int value1;
+	int important_value;
+} Nodeinfo;
+
 typedef struct {
-    HNode* nodes;
+    Nodeinfo* items;
     int size;
 } ArrayHeap;
 
-*/
 ArrayHeap* AH_new(int max) {
     ArrayHeap* pheap;
-    if ((pheap = calloc(1, sizeof(ArrayHeap))) == NULL) exit(1);
-    if ((pheap->nodes = calloc(max + 1, sizeof(HNode))) == NULL) exit(1);
+    if (!(pheap = calloc(1, sizeof(ArrayHeap)))) exit(1);
+    if (!(pheap->items = calloc(max + 1, sizeof(Nodeinfo)))) exit(1);
     return pheap;
 }
 void AH_delete(ArrayHeap* pheap) {
-    free(pheap->nodes);
+    free(pheap->items);
     free(pheap);
 }
 int AH_isEmpty(ArrayHeap* pheap) {
     return pheap->size == 0;
 }
-void AH_push(ArrayHeap* pheap, Element item, int priority) {
-    HNode newNode;
+void AH_push(ArrayHeap* pheap, Nodeinfo item) {
     int index = pheap->size + 1;
     while (index > 1) {
         int parentIndex = index / 2;
-        if (priority < pheap->nodes[parentIndex].priority) {
-            //Minheap
-            pheap->nodes[index] = pheap->nodes[parentIndex];
+        if (item.important_value < pheap->items[parentIndex].important_value) {
+            // Minheap
+            pheap->items[index] = pheap->items[parentIndex];
             index = parentIndex;
         }
         else break;
     }
-    newNode.item = item;
-    newNode.priority = priority;
-    pheap->nodes[index] = newNode;
+	pheap->items[index] = item;
     pheap->size++;
 }
-Element AH_pop(ArrayHeap* pheap) {
+Nodeinfo AH_pop(ArrayHeap* pheap) {
     const int size = pheap->size;
-    const Element topitem = pheap->nodes[1].item;
-    const HNode last = pheap->nodes[size];
+	const Nodeinfo topitem = pheap->items[1];
+    const Nodeinfo last = pheap->items[size];
     int left, pickedChild, parentIndex = 1;
     while ((left = parentIndex * 2) <= size) {
-        if (left == size) pickedChild = left;
-        else if (pheap->nodes[left].priority < pheap->nodes[left + 1].priority) pickedChild = left;
-        //Minheap
+        if (left == size || pheap->items[left].important_value < pheap->items[left + 1].important_value) pickedChild = left;
+        // Minheap
         else pickedChild = left + 1;
-        if (last.priority > pheap->nodes[pickedChild].priority) {
-            //Minheap
-            pheap->nodes[parentIndex] = pheap->nodes[pickedChild];
+        if (last.important_value > pheap->items[pickedChild].important_value) {
+            // Minheap
+            pheap->items[parentIndex] = pheap->items[pickedChild];
             parentIndex = pickedChild;
         }
         else break;
     }
-    pheap->nodes[parentIndex] = last;
+    pheap->items[parentIndex] = last;
     pheap->size--;
     return topitem;
 }
-void AH_heapSort(Element* Base, int NumOfElement) {
-    ArrayHeap* heap = AH_new(NumOfElement);
-    for (int i = 0; i < NumOfElement; i++)
-        AH_push(heap, Base[i], Base[i]);
-    for (int i = 0; i < NumOfElement; i++)
-        Base[i] = AH_pop(heap);
-    AH_delete(heap);
-}
-/*
-Integer Heap
 
+// Version 2: Simple integer heap
+/*
 typedef struct {
-    int* nodes;
+    int* items;
     int size;
 } ArrayHeap;
+
 ArrayHeap* AH_new(int max) {
     ArrayHeap* pheap;
-    if ((pheap = calloc(1, sizeof(ArrayHeap))) == NULL) exit(1);
-    if ((pheap->nodes = calloc(max + 1, sizeof(int))) == NULL) exit(1);
+    if (!(pheap = calloc(1, sizeof(ArrayHeap)))) exit(1);
+    if (!(pheap->items = calloc(max + 1, sizeof(int)))) exit(1);
     return pheap;
 }
 void AH_delete(ArrayHeap* pheap) {
-    free(pheap->nodes);
+    free(pheap->items);
     free(pheap);
 }
 int AH_isEmpty(ArrayHeap* pheap) {
@@ -95,38 +83,39 @@ void AH_push(ArrayHeap* pheap, int item) {
     int index = pheap->size + 1;
     while (index > 1) {
         int parentIndex = index / 2;
-        if (item < pheap->nodes[parentIndex]) {
+        if (item < pheap->items[parentIndex]) {
             //Minheap
-            pheap->nodes[index] = pheap->nodes[parentIndex];
+            pheap->items[index] = pheap->items[parentIndex];
             index = parentIndex;
         }
         else break;
     }
-    pheap->nodes[index] = item;
+    pheap->items[index] = item;
     pheap->size++;
 }
 int AH_pop(ArrayHeap* pheap) {
     const int size = pheap->size;
-    const int topitem = pheap->nodes[1];
-    const int last = pheap->nodes[size];
+    const int topitem = pheap->items[1];
+    const int last = pheap->items[size];
     int left, pickedChild, parentIndex = 1;
     while ((left = parentIndex * 2) <= size) {
-        if (left == size) pickedChild = left;
-        else if (pheap->nodes[left] < pheap->nodes[left + 1]) pickedChild = left;
+        if (left == size || pheap->items[left] < pheap->items[left + 1]) pickedChild = left;
         //Minheap
         else pickedChild = left + 1;
-        if (last > pheap->nodes[pickedChild]) {
+        if (last > pheap->items[pickedChild]) {
             //Minheap
-            pheap->nodes[parentIndex] = pheap->nodes[pickedChild];
+            pheap->items[parentIndex] = pheap->items[pickedChild];
             parentIndex = pickedChild;
         }
         else break;
     }
-    pheap->nodes[parentIndex] = last;
+    pheap->items[parentIndex] = last;
     pheap->size--;
     return topitem;
 }
 */
+
+
 
 /*
 Below are only for isFull.
@@ -141,6 +130,5 @@ int AH_isFull(ArrayHeap* pheap) {
 
 
 /*
-* 2022.7.27 Wed
-* 2023.7.18 Tue: Delete unnecessary code
+* 2024-01-04: Modify to cleaner code
 */
