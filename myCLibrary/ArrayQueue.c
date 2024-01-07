@@ -22,10 +22,10 @@ void AQ_delete(ArrayQueue* pqueue) {
 	free(pqueue->items);
 	free(pqueue);
 }
-int AQ_isEmpty(ArrayQueue* pqueue) {
+int AQ_empty(const ArrayQueue* pqueue) {
 	return pqueue->front == pqueue->rear;
 }
-Element AQ_front(ArrayQueue* pqueue) {
+Element AQ_front(const ArrayQueue* pqueue) {
 	return pqueue->items[pqueue->front];
 }
 void AQ_push(ArrayQueue* pqueue, Element item) {
@@ -40,14 +40,30 @@ Element AQ_pop(ArrayQueue* pqueue) {
 }
 
 
-int AQ_isFull(ArrayQueue* pqueue) {
-	return pqueue->front == (pqueue->rear + 1) & (pqueue->capacity - 1);
+int AQ_full(const ArrayQueue* pqueue) {
+	return pqueue->front == ((pqueue->rear + 1) & (pqueue->capacity - 1));
 }
+int AQ_size(const ArrayQueue* pqueue) {
+	return (pqueue->rear - pqueue->front + pqueue->capacity) & (pqueue->capacity - 1);
+}
+
+/* 
+* In its strict definition, queues do not have this feature.
+* Element AQ_back(const ArrayQueue* pqueue) {
+*	return pqueue->items[(pqueue->rear + pqueue->capacity - 1) & (pqueue->capacity - 1)];
+*}
+*/
 
 /*
 * 2024-01-04 Thu
+*
 * The optimized Queue
 *
 * By replacing the % operation with bitwise &,
 * performance is very close to linear queue.
+*
+*
+* 2024-01-08 Mon
+*
+* Camel cases changed to snake cases
 */
