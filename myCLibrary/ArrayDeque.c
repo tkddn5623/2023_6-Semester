@@ -33,13 +33,13 @@ Element AD_back(const ArrayDeque* pdeque) {
 }
 void AD_push_front(ArrayDeque* pdeque, Element item) {
 	const int f_before = (pdeque->front - 1 + pdeque->capacity) & (pdeque->capacity - 1);
-	pdeque->items[f_before] = item;
 	pdeque->front = f_before;
+	pdeque->items[f_before] = item;
 }
 void AD_push_back(ArrayDeque* pdeque, Element item) {
 	const int rear = pdeque->rear;
-	pdeque->items[rear] = item;
 	pdeque->rear = (rear + 1) & (pdeque->capacity - 1);
+	pdeque->items[rear] = item;
 }
 Element AD_pop_front(ArrayDeque* pdeque) {
 	const int front = pdeque->front;

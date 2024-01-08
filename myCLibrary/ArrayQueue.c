@@ -30,8 +30,8 @@ Element AQ_front(const ArrayQueue* pqueue) {
 }
 void AQ_push(ArrayQueue* pqueue, Element item) {
 	const int rear = pqueue->rear;
-	pqueue->items[rear] = item;
 	pqueue->rear = (rear + 1) & (pqueue->capacity - 1);
+	pqueue->items[rear] = item;
 }
 Element AQ_pop(ArrayQueue* pqueue) {
 	const int front = pqueue->front;
@@ -47,7 +47,7 @@ int AQ_size(const ArrayQueue* pqueue) {
 	return (pqueue->rear - pqueue->front + pqueue->capacity) & (pqueue->capacity - 1);
 }
 
-/* 
+/*
 * In its strict definition, queues do not have this feature.
 * Element AQ_back(const ArrayQueue* pqueue) {
 *	return pqueue->items[(pqueue->rear + pqueue->capacity - 1) & (pqueue->capacity - 1)];
