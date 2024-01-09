@@ -62,7 +62,7 @@ void solve9376_dijkstra(int dist[][MAXH + 2], const char units[][MAXH + 3], cons
 	static int dx[4] = { +1,-1,0,0 };
 	static int dy[4] = { 0,0,+1,-1 };
 	// Any priority queue that maintains sorting can be used.
-	ArrayDeque* deq = AD_new(H * W * 4);
+	ArrayDeque* deq = AD_new(MAXH * MAXH / 2);
 
 	for (int i = 0; i <= H + 1; i++) for (int j = 0; j <= W + 1; j++) {
 		dist[i][j] = INF;
@@ -107,11 +107,8 @@ void solve9376(const char units[][MAXH + 3], const int H, const int W) {
 		int c;
 	} prisoner[2] = { 0 };
 
-	for (int k = 0, i = 0; i <= H + 1; i++) for (int j = 0; j <= W + 1; j++) {
-		dist1[i][j] = INF;
-		dist2[i][j] = INF;
-		dist3[i][j] = INF;
-		if (i > 0 && i <= H && j > 0 && j <= W && units[i][j] == UNIT_PRISONER) {
+	for (int k = 0, i = 1; i <= H; i++) for (int j = 1; j <= W; j++) {
+		if (units[i][j] == UNIT_PRISONER) {
 			prisoner[k++] = (struct Coordinate){ i,j };
 		}
 	}
