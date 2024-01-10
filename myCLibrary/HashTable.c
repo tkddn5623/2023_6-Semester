@@ -1,10 +1,12 @@
 #include <stdlib.h>
 
 typedef int Element;
+
 typedef struct _HNode {
 	Element item;
 	struct _HNode* next;
 } HNode;
+
 typedef struct {
 	int blocksize;
 	int nodesize;
@@ -13,23 +15,6 @@ typedef struct {
 	HNode* _edges;
 } Hashtable;
 
-#define HASH_MSB_BITS (17)
-#define HASHBLOCKSIZE (1 << HASH_MSB_BITS)
-int tiny_hash_i32(unsigned int k) {
-	return (k * 2654435769u) >> (32 - HASH_MSB_BITS);
-}
-int tiny_hash_i64(unsigned long long k) {
-	return (k * 11400714819323198485llu) >> (64 - HASH_MSB_BITS);
-}
-#define HASHBLOCKSIZE (100003)
-int hashing(const char str[]) {
-	unsigned int h = 0;
-	char ch;
-	while (ch = (*str++)) {
-		h = (h + ch) * 5381u + ch;
-	}
-	return (int)(h % HASHBLOCKSIZE);
-}
 Hashtable* HT_new(int blocksize, int nodesize) {
 	Hashtable* table;
 	if (!(table = malloc(sizeof(Hashtable)))) exit(1);
@@ -56,13 +41,31 @@ void HT_push(Hashtable* table, Element item) {
 	table->tails[index]->next = &table->_edges[table->nodecount];
 	table->tails[index] = &table->_edges[table->nodecount++];
 }
-int HT_search(Hashtable* table, Element item) {
+int HT_search(const Hashtable* table, Element item) {
 	int index = tiny_hash_i32(item);
 	HNode* head = &table->_edges[index];
 	for (HNode* cur = head->next; cur != head; cur = cur->next) {
 		if (cur->item == item) return 1;
 	}
 	return 0;
+}
+
+#define HASH_MSB_BITS (17)
+#define HASH_BLOCK_SIZE (1 << HASH_MSB_BITS)
+int tiny_hash_i32(unsigned int k) {
+	return (k * 2654435769u) >> (32 - HASH_MSB_BITS);
+}
+int tiny_hash_i64(unsigned long long k) {
+	return (k * 11400714819323198485llu) >> (64 - HASH_MSB_BITS);
+}
+#define HASH_BLOCK_SIZE (100003)
+int hashing(const char str[]) {
+	unsigned int h = 0;
+	char ch;
+	while (ch = (*str++)) {
+		h = (h + ch) * 5381u + ch;
+	}
+	return (int)(h % HASH_BLOCK_SIZE);
 }
 
 /*
