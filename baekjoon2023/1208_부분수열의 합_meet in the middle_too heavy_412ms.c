@@ -1,3 +1,4 @@
+// 189552KB, 412ms
 // boj 1182, 1208
 #include <stdio.h>
 #include <stdlib.h>
