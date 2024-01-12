@@ -1,5 +1,23 @@
 #include <stdlib.h>
 
+#define HASH_MSB_BITS (17)
+#define HASH_BLOCK_SIZE (1 << HASH_MSB_BITS)
+int tiny_hash_i32(unsigned int k) {
+	return (k * 2654435769u) >> (32 - HASH_MSB_BITS);
+}
+int tiny_hash_i64(unsigned long long k) {
+	return (k * 11400714819323198485llu) >> (64 - HASH_MSB_BITS);
+}
+#define HASH_BLOCK_SIZE (100003)
+int hashing(const char str[]) {
+	unsigned int h = 0;
+	char ch;
+	while (ch = (*str++)) {
+		h = (h + ch) * 5381u + ch;
+	}
+	return (int)(h % HASH_BLOCK_SIZE);
+}
+
 typedef int Element;
 
 typedef struct _HNode {
@@ -48,24 +66,6 @@ int HT_search(const Hashtable* table, Element item) {
 		if (cur->item == item) return 1;
 	}
 	return 0;
-}
-
-#define HASH_MSB_BITS (17)
-#define HASH_BLOCK_SIZE (1 << HASH_MSB_BITS)
-int tiny_hash_i32(unsigned int k) {
-	return (k * 2654435769u) >> (32 - HASH_MSB_BITS);
-}
-int tiny_hash_i64(unsigned long long k) {
-	return (k * 11400714819323198485llu) >> (64 - HASH_MSB_BITS);
-}
-#define HASH_BLOCK_SIZE (100003)
-int hashing(const char str[]) {
-	unsigned int h = 0;
-	char ch;
-	while (ch = (*str++)) {
-		h = (h + ch) * 5381u + ch;
-	}
-	return (int)(h % HASH_BLOCK_SIZE);
 }
 
 /*
