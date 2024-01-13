@@ -1,10 +1,12 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#define __USE_MISC
+#include <stdlib.h>
+#undef __USE_MISC
 
 #define lengthof(arr) ((int)(sizeof(arr) / sizeof(arr[0])))
 
-#define HASH_MSB_BITS (15)
+#define HASH_MSB_BITS (10)
 #define HASH_BLOCK_SIZE (1 << HASH_MSB_BITS)
 
 
@@ -39,8 +41,9 @@ int main() {
 		//element = (i - (num_buffer_size / 2));
 		//element = i * i;
 
-#ifdef GLIBC
+#ifdef __GLIBC__
 		element = random();
+		printf("SHIT! (%d)\n", element);
 #endif
 
 		//printf("E: %d\n", element);
