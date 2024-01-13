@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define lengthof(arr) ((int)(sizeof(arr) / sizeof(arr[0])))
 
-#define HASH_MSB_BITS (8)
+#define HASH_MSB_BITS (15)
 #define HASH_BLOCK_SIZE (1 << HASH_MSB_BITS)
 
 
@@ -34,7 +35,7 @@ int main() {
 	for (int i = 0; i < num_buffer_size; i++) {
 		int element = -1;
 
-		//element = (i);
+		element = (i);
 		//element = (i - (num_buffer_size / 2));
 		//element = i * i;
 
@@ -42,7 +43,7 @@ int main() {
 		element = random();
 #endif
 
-		printf("E: %d\n", element);
+		//printf("E: %d\n", element);
 
 		num_buffer[i] = element;
 	}
@@ -60,7 +61,7 @@ int main() {
 
 	// Below is the output part
 	printf("HASH BLOCK SIZE: %d\n", HASH_BLOCK_SIZE);
-	printf("KEY CARDINALITY: %d (load factor: %.3f)\n", num_set.size, (double)num_set.size / HASH_BLOCK_SIZE);
+	printf("KEY CARDINALITY: %d (load factor: %.3f)\n\n", num_set.size, (double)num_set.size / HASH_BLOCK_SIZE);
 
 	performance_chaining(hash_table, &num_set, 0);
 	performance_linear_probing(hash_table, &num_set, 0);
@@ -99,13 +100,14 @@ void performance_chaining(int hash_table[], const struct simple_list* num_set, i
 
 	for (int i = 0; i < HASH_BLOCK_SIZE; i++) {
 		int c = hash_table[i];
-		if (c < (sizeof(count) / sizeof(count[0]))) count[c]++;
-		else count[(sizeof(count) / sizeof(count[0])) - 1]++;
+		if (c == 0) continue;
+		if (c < lengthof(count)) count[c]++;
+		else count[lengthof(count) - 1]++;
 	}
 
-	for (int i = 0; i < (sizeof(count) / sizeof(count[0])); i++) {
+	for (int i = 0; i < lengthof(count); i++) {
 		if (count[i] == 0) continue;
-		printf("Count(chaining) %2d%s: %d\n", i, i < (sizeof(count) / sizeof(count[0])) - 1 ? " " : "+", count[i]);
+		printf("Count(chaining) %2d%s: %d\n", i, i < lengthof(count) - 1 ? " " : "+", count[i]);
 	}
 	putchar('\n');
 
@@ -128,13 +130,13 @@ void performance_linear_probing(int hash_table[], const struct simple_list* num_
 			printf("Open addressing failed: Blocks overflowd.\n");
 			return;
 		}
-		count_move[j < sizeof(count_move) / sizeof(count_move[0]) ? j : sizeof(count_move) / sizeof(count_move[0]) - 1]++;
+		count_move[j < lengthof(count_move) ? j : lengthof(count_move) - 1]++;
 		hash_table[(h + j) % HASH_BLOCK_SIZE]++;
 	}
 
-	for (int i = 0; i < (sizeof(count_move) / sizeof(count_move[0])); i++) {
+	for (int i = 0; i < lengthof(count_move); i++) {
 		if (count_move[i] == 0) continue;
-		printf("Count(linear_probing_insert) %2d%s: %d\n", i, i < (sizeof(count_move) / sizeof(count_move[0])) - 1 ? " " : "+", count_move[i]);
+		printf("Count(linear_probing_insert) %2d%s: %d\n", i, i < lengthof(count_move) - 1 ? " " : "+", count_move[i]);
 	}
 	putchar('\n');
 
@@ -154,9 +156,9 @@ void performance_linear_probing(int hash_table[], const struct simple_list* num_
 	for (int len = 0, i = 0; i < HASH_BLOCK_SIZE; i++) {
 		if (hash_table[(start + i) % HASH_BLOCK_SIZE] == 0) {
 			if (len > 0) {
-				count_chunk[len < sizeof(count_chunk) / sizeof(count_chunk[0]) ? len : sizeof(count_chunk) / sizeof(count_chunk[0]) - 1]++;
+				count_chunk[len < lengthof(count_chunk) ? len : lengthof(count_chunk) - 1]++;
 			}
-			count_chunk[0];
+			//count_chunk[0]++;
 			len = 0;
 		}
 		else {
@@ -164,9 +166,9 @@ void performance_linear_probing(int hash_table[], const struct simple_list* num_
 		}
 	}
 
-	for (int i = 0; i < (sizeof(count_chunk) / sizeof(count_chunk[0])); i++) {
+	for (int i = 0; i < lengthof(count_chunk); i++) {
 		if (count_chunk[i] == 0) continue;
-		printf("Count(linear_probing_search) %2d%s: %d\n", i, i < (sizeof(count_chunk) / sizeof(count_chunk[0])) - 1 ? " " : "+", count_chunk[i]);
+		printf("Count(linear_probing_search) %2d%s: %d\n", i, i < lengthof(count_chunk) - 1 ? " " : "+", count_chunk[i]);
 	}
 	putchar('\n');
 
@@ -200,7 +202,7 @@ int* MergeSort(int* list, int size) {
 
 Hash performance simple tester
 
-This program compares the performance of hash table 
+This program compares the performance of hash table
 chaining and open addressing (linear probing among them).
 
 For chaining, the sizes of each list are output.
