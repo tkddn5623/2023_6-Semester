@@ -1,171 +1,162 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#define HASH_MSB_BITS (18)
+
+#define HASH_MSB_BITS (8)
 #define HASH_BLOCK_SIZE (1 << HASH_MSB_BITS)
 
-typedef int Element;
 
-typedef struct _HNode {
-	Element item;
-	struct _HNode* next;
-} HNode;
+struct simple_list {
+	int size;
+	int items[HASH_BLOCK_SIZE];
+};
 
-typedef struct {
-	int blocksize;
-	int nodesize;
-	int nodecount;
-	HNode** tails;
-	HNode* _edges;
-} Hashtable;
+int hash_wrapper(int k, int mode);
+int tiny_hash_i32(unsigned int k);
+int tiny_hash_i64(unsigned long long k);
+void performance_chaining(int hash_table[], const struct simple_list* num_set, int hash_mode);
+void performance_linear_probing(int hash_table[], const struct simple_list* num_set, int hash_mode);
+void _MergeSort_impl(int* list, int* sorted, const int left, const int right);
+int* MergeSort(int* list, int size);
 
+int main() {
+	static int hash_table[HASH_BLOCK_SIZE];
+	static int num_buffer[HASH_BLOCK_SIZE];
+	static struct simple_list num_set;
+
+	// Parameter 1: Num buffer size
+	int num_buffer_size = HASH_BLOCK_SIZE * 50 / 100;
+#ifdef GLIBC
+	srandom(1);
+#endif
+
+	for (int i = 0; i < num_buffer_size; i++) {
+		int element = -1;
+
+		//element = (i);
+		//element = (i - (num_buffer_size / 2));
+		//element = i * i;
+
+#ifdef GLIBC
+		element = random();
+#endif
+
+		printf("E: %d\n", element);
+
+		num_buffer[i] = element;
+	}
+
+	// Below is the part about deduplication.
+	MergeSort(num_buffer, num_buffer_size);
+	num_set.items[num_set.size++] = num_buffer[0];
+
+	for (int prev = num_buffer[0], i = 1; i < num_buffer_size; i++) {
+		int cur = num_buffer[i];
+		if (prev == cur) continue;
+		prev = cur;
+		num_set.items[num_set.size++] = cur;
+	}
+
+	// Below is the output part
+	printf("HASH BLOCK SIZE: %d\n", HASH_BLOCK_SIZE);
+	printf("KEY CARDINALITY: %d (load factor: %.3f)\n", num_set.size, (double)num_set.size / HASH_BLOCK_SIZE);
+
+	performance_chaining(hash_table, &num_set, 0);
+	performance_linear_probing(hash_table, &num_set, 0);
+
+	performance_chaining(hash_table, &num_set, 1);
+	performance_linear_probing(hash_table, &num_set, 1);
+}
+
+// Parameter 2: Hash function
+int hash_wrapper(int k, int mode) {
+	switch (mode) {
+	case 0: return tiny_hash_i32(k);
+	case 1: return tiny_hash_i64(k);
+	default: exit(1);
+	}
+}
 
 int tiny_hash_i32(unsigned int k) {
 	return (k * 2654435769u) >> (32 - HASH_MSB_BITS);
 }
+
 int tiny_hash_i64(unsigned long long k) {
 	return (k * 11400714819323198485llu) >> (64 - HASH_MSB_BITS);
 }
-Hashtable* HT_new(int blocksize, int nodesize) {
-	Hashtable* table;
-	if (!(table = malloc(sizeof(Hashtable)))) exit(1);
-	if (!(table->tails = calloc(blocksize, sizeof(HNode*)))) exit(1);
-	if (!(table->_edges = calloc(nodesize + blocksize, sizeof(HNode)))) exit(1);
-	table->blocksize = blocksize;
-	table->nodesize = nodesize + blocksize;
-	table->nodecount = blocksize;
-	for (int i = 0; i < blocksize; i++) {
-		table->tails[i] = &table->_edges[i];
-		table->tails[i]->next = table->tails[i];
-	}
-	return table;
-}
-void HT_delete(Hashtable* table) {
-	free(table->_edges);
-	free(table->tails);
-	free(table);
-}
-void HT_push(Hashtable* table, Element item) {
-	int index = tiny_hash_i32(item);
-	table->_edges[table->nodecount].item = item;
-	table->_edges[table->nodecount].next = table->tails[index]->next;
-	table->tails[index]->next = &table->_edges[table->nodecount];
-	table->tails[index] = &table->_edges[table->nodecount++];
-}
-int HT_search(const Hashtable* table, Element item) {
-	int index = tiny_hash_i32(item);
-	HNode* head = &table->_edges[index];
-	for (HNode* cur = head->next; cur != head; cur = cur->next) {
-		if (cur->item == item) return 1;
-	}
-	return 0;
-}
 
-#define HASH1
+void performance_chaining(int hash_table[], const struct simple_list* num_set, int hash_mode) {
+	static int count[1000];
 
-int main() {
-	static int arr[HASH_BLOCK_SIZE];
-	static int count[50];
-	static int mvcount[1000000];
-	int count_total = 0;
-	int mvcount_total = 0;
+	memset(hash_table, 0, sizeof(hash_table[0]) * HASH_BLOCK_SIZE);
+	memset(count, 0, sizeof(count));
 
-	int k = HASH_BLOCK_SIZE * 65 / 100;
-	printf("[K(%d) / BLSZ(%d)]\n", k, HASH_BLOCK_SIZE);
-
-	for (int i = 0; i < k; i++) {
-		int num = (i - HASH_BLOCK_SIZE / 2);
-		//int num = i;
-		int hash = tiny_hash_i64(num);
-#ifdef HASH1
-		if (arr[hash] >= 1) {
-			for (int j = 1; j < HASH_BLOCK_SIZE; j++) {
-				int next = (hash + j) % HASH_BLOCK_SIZE;
-				//printf("Hash (%d -> %d)\n", hash, next);
-				if (arr[next] == 0) {
-					//printf("Put it on %d!\n", j);
-					if (j >= 10) {
-						//printf("Too Heavy...[mov %d] [hash: %d] (%d / %d)\n", j, next, i, k);
-						;
-					}
-					if (j < 1000000) {
-						mvcount[j]++;
-					}
-					arr[next]++;
-					break;
-				}
-			}
-		}
-		else {
-			mvcount[0]++;
-			arr[hash]++;
-		}
-#endif
-#ifndef HASH1
-		arr[hash]++;
-#endif
+	for (int sz = num_set->size, i = 0; i < sz; i++) {
+		int h = hash_wrapper(num_set->items[i], hash_mode);
+		hash_table[h]++;
 	}
 
-	for (int j = 0, i = 0; i < HASH_BLOCK_SIZE; i++) {
-		//if (arr[i] == 0) continue;
-		count[arr[i]]++;
-		//printf("(%d th) arr[%d] => %d\n", j++, i, arr[i]);
-		
-		/*
-		if (arr[i] >= 2) printf("(%3d, %3d) --- --- --- ---\n", i, arr[i]);
-		if (arr[i] >= 1) printf("(%3d, %3d) --- ---\n", i, arr[i]);
-		else             printf("(%3d,   0) \n", i);
-		*/
+	for (int i = 0; i < HASH_BLOCK_SIZE; i++) {
+		int c = hash_table[i];
+		if (c < (sizeof(count) / sizeof(count[0]))) count[c]++;
+		else count[(sizeof(count) / sizeof(count[0])) - 1]++;
 	}
 
-	long long refavg = 0;
-
-	for (int i = 0; i < 50; i++) {
+	for (int i = 0; i < (sizeof(count) / sizeof(count[0])); i++) {
 		if (count[i] == 0) continue;
-		printf("Cnt (%d) => %d\n", i, count[i]);
-		count_total += count[i];
-		if (i > 0) {
-			refavg += (long long)count[i] * i * (i + 1) / 2;
+		printf("Count(chaining) %2d%s: %d\n", i, i < (sizeof(count) / sizeof(count[0])) - 1 ? " " : "+", count[i]);
+	}
+	putchar('\n');
+
+}
+
+void performance_linear_probing(int hash_table[], const struct simple_list* num_set, int hash_mode) {
+	static int count_move[1000];
+	static int count_chunk[1000];
+
+	memset(hash_table, 0, sizeof(hash_table[0]) * HASH_BLOCK_SIZE);
+	memset(count_move, 0, sizeof(count_move));
+	memset(count_chunk, 0, sizeof(count_chunk));
+
+	for (int sz = num_set->size, i = 0; i < sz; i++) {
+		int j, h = hash_wrapper(num_set->items[i], hash_mode);
+		for (j = 0; j < HASH_BLOCK_SIZE; j++) {
+			if (hash_table[(h + j) % HASH_BLOCK_SIZE] == 0) break;
 		}
-
+		if (j == HASH_BLOCK_SIZE) {
+			printf("Open addressing failed: Blocks overflowd.\n");
+			return;
+		}
+		count_move[j < sizeof(count_move) / sizeof(count_move[0]) ? j : sizeof(count_move) / sizeof(count_move[0]) - 1]++;
+		hash_table[(h + j) % HASH_BLOCK_SIZE]++;
 	}
-	printf("\nCnt sum: %d\n\n", count_total);
-	printf("Cnt ref avg: %f\n\n", (double)refavg / (count_total - count[0]));
 
-#ifdef HASH1
-	long long mvavg = 0;
-
-	for (int i = 0; i < 1000000; i++) {
-		if (mvcount[i] == 0) continue;
-		printf("Mov (%d) => %d\n", i, mvcount[i]);
-		mvavg += (long long)i * mvcount[i];
-		mvcount_total += mvcount[i];
+	for (int i = 0; i < (sizeof(count_move) / sizeof(count_move[0])); i++) {
+		if (count_move[i] == 0) continue;
+		printf("Count(linear_probing_insert) %2d%s: %d\n", i, i < (sizeof(count_move) / sizeof(count_move[0])) - 1 ? " " : "+", count_move[i]);
 	}
-	printf("\nMov sum: %d\n\n", mvcount_total);
-	printf("\nMovavg sum: %f\n\n", (double)mvavg / mvcount_total);
+	putchar('\n');
 
 	int start = -1;
 	for (int i = 0; i < HASH_BLOCK_SIZE; i++) {
-		if (arr[i] == 0 && arr[(i + 1) % HASH_BLOCK_SIZE] != 0) start = (i + 1) % HASH_BLOCK_SIZE;
-	}
-	printf("\nStart from hashidx %d\n", start);
-	if (start == -1) {
-		printf("All blocks connected.\n");
-		exit(1);
+		if (hash_table[i] == 0 && hash_table[(i + 1) % HASH_BLOCK_SIZE] != 0) {
+			start = (i + 1) % HASH_BLOCK_SIZE;
+			break;
+		}
 	}
 
-#define LENMAX (1000000)
-	static int lencount[LENMAX];
-	int len = 0;
-	for (int i = 0; i < HASH_BLOCK_SIZE; i++) {
-		if (arr[(start + i) % HASH_BLOCK_SIZE] == 0) {
-			if (len > 0 && len < LENMAX) {
-				lencount[len]++;
+	if (start == -1) {
+		printf("Open addressing failed: All blocks connected. (i.e. size is %d)\n", num_set->size);
+		return;
+	}
+
+	for (int len = 0, i = 0; i < HASH_BLOCK_SIZE; i++) {
+		if (hash_table[(start + i) % HASH_BLOCK_SIZE] == 0) {
+			if (len > 0) {
+				count_chunk[len < sizeof(count_chunk) / sizeof(count_chunk[0]) ? len : sizeof(count_chunk) / sizeof(count_chunk[0]) - 1]++;
 			}
-			if (len > HASH_BLOCK_SIZE / 1000 && len > 20) {
-				printf("!!!Super big chunk detected\n");
-			}
-			lencount[0]++;
+			count_chunk[0];
 			len = 0;
 		}
 		else {
@@ -173,11 +164,45 @@ int main() {
 		}
 	}
 
-	for (int i = 0; i < LENMAX; i++) {
-		if (lencount[i] == 0) {
-			continue;
-		}
-		printf("[%d]: %d\n", i, lencount[i]);
+	for (int i = 0; i < (sizeof(count_chunk) / sizeof(count_chunk[0])); i++) {
+		if (count_chunk[i] == 0) continue;
+		printf("Count(linear_probing_search) %2d%s: %d\n", i, i < (sizeof(count_chunk) / sizeof(count_chunk[0])) - 1 ? " " : "+", count_chunk[i]);
 	}
-#endif 
+	putchar('\n');
+
 }
+
+void _MergeSort_impl(int* list, int* sorted, const int left, const int right) {
+	if (left >= right) return;
+	const int mid = left + (right - left) / 2;
+	_MergeSort_impl(list, sorted, left, mid);
+	_MergeSort_impl(list, sorted, mid + 1, right);
+	int idx, first, second;
+	idx = left, first = left, second = mid + 1;
+	while (first <= mid && second <= right) {
+		if (list[first] <= list[second]) sorted[idx++] = list[first++];
+		else sorted[idx++] = list[second++];
+	}
+	while (first <= mid)    sorted[idx++] = list[first++];
+	while (second <= right) sorted[idx++] = list[second++];
+	for (int i = left; i <= right; i++) list[i] = sorted[i];
+}
+
+int* MergeSort(int* list, int size) {
+	int* sorted = calloc(size, sizeof(int)); if (!sorted) exit(1);
+	_MergeSort_impl(list, sorted, 0, size - 1);
+	free(sorted);
+	return list;
+}
+
+/*
+2024-01-13
+
+Hash performance simple tester
+
+This program compares the performance of hash table 
+chaining and open addressing (linear probing among them).
+
+For chaining, the sizes of each list are output.
+For open addressing, the sizes of each cluster are output.
+*/
