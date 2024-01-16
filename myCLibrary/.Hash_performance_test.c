@@ -6,7 +6,7 @@
 
 #define lengthof(arr) ((int)(sizeof(arr) / sizeof(arr[0])))
 
-#define HASH_MSB_BITS (24)
+#define HASH_MSB_BITS (25)
 #define HASH_BLOCK_SIZE (1 << HASH_MSB_BITS)
 
 
@@ -38,13 +38,10 @@ int main() {
 		int element = -1;
 
 		element = (i);
-		// element = (i - (num_buffer_size / 2));
-		// element = i * i;
+		//element = (i - (num_buffer_size / 2));
 
 #ifdef __GLIBC__
-		// element = (int)(random()) % (HASH_BLOCK_SIZE);
-		element = (int)(random());
-		printf("SHIT! (%d)\n", element);
+		element = random();
 #endif
 
 		//printf("E: %d\n", element);
@@ -72,11 +69,22 @@ int main() {
 
 	performance_chaining(hash_table, &num_set, 1);
 	performance_linear_probing(hash_table, &num_set, 1);
+
+	performance_chaining(hash_table, &num_set, -1);
+	// performance_linear_probing(hash_table, &num_set, -1);
 }
 
 // Parameter 2: Hash function
 int hash_wrapper(int k, int mode) {
 	switch (mode) {
+	case -1:
+		int r = (int)(random()) % HASH_BLOCK_SIZE;
+		/*
+		do {
+			r = (int)(random());
+		} while (r >= HASH_BLOCK_SIZE);
+		*/
+		return r;
 	case 0: return tiny_hash_i32(k);
 	case 1: return tiny_hash_i64(k);
 	default: exit(1);
@@ -170,7 +178,7 @@ void performance_linear_probing(int hash_table[], const struct simple_list* num_
 		}
 	}
 
-	long long  chunk_additional_ref_avg = 0;
+	long long chunk_additional_ref_avg = 0;
 	for (int i = 0; i < lengthof(count_chunk); i++) {
 		if (i == 0 || count_chunk[i] == 0) continue;
 		chunk_additional_ref_avg += (long long)i * (i - 1) / 2 * count_chunk[i];
