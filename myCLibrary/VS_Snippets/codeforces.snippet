@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>C style Codeforces init1</Title>
+      <Description>C style Codeforces</Description>
+	  <Author>JungSangWoo</Author>
+      <Shortcut>codeforces</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="Cpp">
+        <![CDATA[#define __USE_MINGW_ANSI_STDIO 0
+		#include <stdio.h>
+		#define MAXN (77777)
+        void solve$FUNCNAME$(int arr[], int N) {
+			
+        }
+        int main() {
+		    static int arr[MAXN];
+	        int T;
+	        scanf("%d", &T);
+            do {
+			    int N;
+				scanf("%d", &N);
+			    for (int i = 0; i < N; i++) { scanf("%d", &arr[i]); }
+		        solve$FUNCNAME$(arr, N);
+			} while(--T > 0);
+        }]]>
+      </Code>
+	  <Declarations>
+        <Literal>
+          <ID>FUNCNAME</ID>
+          <Default>A</Default>
+        </Literal>
+      </Declarations>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
