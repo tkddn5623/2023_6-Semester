@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 
 #define HASH_MSB_BITS (20)

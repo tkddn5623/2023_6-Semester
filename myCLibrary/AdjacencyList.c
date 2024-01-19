@@ -1,11 +1,11 @@
 #include <stdlib.h>
-#include "AdjacencyList.h"
-/*
+
 typedef struct _GNode {
     int id;
     int weight;
     struct _GNode* next;
 } GNode;
+
 typedef struct {
     int vtxsize;
     int edgesize;
@@ -13,7 +13,7 @@ typedef struct {
     GNode** tails;
     GNode* _edges;
 } Graph;
-*/
+
 Graph* GR_new(int vtxsize, int edgesize) {
     Graph* graph;
     if ((graph = malloc(sizeof(Graph))) == NULL) exit(1);

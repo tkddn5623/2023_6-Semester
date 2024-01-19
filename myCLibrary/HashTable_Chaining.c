@@ -8,14 +8,14 @@ int tiny_hash_i32(unsigned int k) {
 int tiny_hash_i64(unsigned long long k) {
 	return (k * 11400714819323198485llu) >> (64 - HASH_MSB_BITS);
 }
-#define HASH_BLOCK_SIZE (100003)
-int hashing(const char str[]) {
+#define HASH_BLOCK_SIZE (1 << 17)
+int tiny_hash_str(const char str[]) {
 	unsigned int h = 0;
 	char ch;
 	while (ch = (*str++)) {
 		h = (h + ch) * 5381u + ch;
 	}
-	return (int)(h % HASH_BLOCK_SIZE);
+	return h & (HASH_BLOCK_SIZE - 1);
 }
 
 typedef int Element;
@@ -69,8 +69,14 @@ int HT_search(const Hashtable* table, Element item) {
 }
 
 /*
-* 2023.2.1 Hashtable
-* 2023.2.1 And Simple STATIC hashing function.
+* 2023.2.1 
+* Hashtable
+*
+* 2023.2.1 
+* And Simple STATIC hashing function.
+*
+* 2024.1.20 
+* Trivial change: modular to bitwise and
 */
 
 /*
