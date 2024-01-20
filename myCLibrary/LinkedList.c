@@ -18,7 +18,7 @@ typedef struct {
 
 List* LL_new(int required_size) {
 	List* list;
-	if (!(list =calloc(1, sizeof(List)))) exit(1);
+	if (!(list = calloc(1, sizeof(List)))) exit(1);
 	if (!(list->_nodes = calloc(required_size + 1, sizeof(LNode)))) exit(1);
 	list->tails = list->_nodes[0].next = &list->_nodes[0];
 	list->nodes_count = 1;
