@@ -1,12 +1,12 @@
 #include <stdlib.h>
-#include "ArrayStack.h"
-/*
+
 typedef int Element;
+
 typedef struct {
 	Element* items;
 	int top;
 } ArrayStack;
-*/
+
 ArrayStack* AS_new(int max) {
 	ArrayStack* pstack;
 	if ((pstack = malloc(sizeof(ArrayStack))) == NULL) exit(1);
@@ -18,10 +18,10 @@ void AS_delete(ArrayStack* pstack) {
 	free(pstack->items);
 	free(pstack);
 }
-int AS_isEmpty(const ArrayStack* pstack) {
+int AS_empty(const ArrayStack* pstack) {
 	return pstack->top == -1;
 }
-Element AS_peek(const ArrayStack* pstack) {
+Element AS_top(const ArrayStack* pstack) {
 	return pstack->items[pstack->top];
 }
 void AS_push(ArrayStack* pstack, Element item) {
@@ -35,17 +35,18 @@ int AS_size(const ArrayStack* pstack) {
 }
 
 
-
-
-
-
-
-
 /*
 int capacity;
 pstack->capacity = max;
 
-int AS_isFull(const ArrayStack* pstack) {
+int AS_full(const ArrayStack* pstack) {
 	return pstack->top == pstack->capacity - 1;
 }
+*/
+
+/*
+* 2024.1.20.
+* 
+* Function names imitates C++ STL methods.
+*
 */
