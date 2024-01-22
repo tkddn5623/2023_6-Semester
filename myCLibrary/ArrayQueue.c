@@ -25,9 +25,6 @@ void AQ_delete(ArrayQueue* pqueue) {
 int AQ_empty(const ArrayQueue* pqueue) {
 	return pqueue->front == pqueue->rear;
 }
-Element AQ_front(const ArrayQueue* pqueue) {
-	return pqueue->items[pqueue->front];
-}
 void AQ_push(ArrayQueue* pqueue, Element item) {
 	const int rear = pqueue->rear;
 	pqueue->rear = (rear + 1) & (pqueue->capacity - 1);
@@ -37,6 +34,9 @@ Element AQ_pop(ArrayQueue* pqueue) {
 	const int front = pqueue->front;
 	pqueue->front = (front + 1) & (pqueue->capacity - 1);
 	return pqueue->items[front];
+}
+Element AQ_front(const ArrayQueue* pqueue) {
+	return pqueue->items[pqueue->front];
 }
 
 
@@ -66,4 +66,8 @@ int AQ_size(const ArrayQueue* pqueue) {
 * 2024-01-08 Mon
 *
 * Camel cases changed to snake cases
+*
+* 2024.1.22 Mon
+*
+* AQ_front moved below.
 */

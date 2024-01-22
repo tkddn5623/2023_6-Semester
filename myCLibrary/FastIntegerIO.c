@@ -24,7 +24,7 @@ int read_int() {
 void read_map() {
 	struct stat st;
 	fstat(0, &st);
-	if ((_buf.rb = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, 0, 0)) == MAP_FAILED)
+	if ((_buf.rb = mmap(NULL, st.st_size + 1, PROT_READ, MAP_PRIVATE, 0, 0)) == MAP_FAILED)
 		_exit(1);
 }
 
@@ -58,7 +58,7 @@ int read_int() {
 void read_whole() {
 	fseek(stdin, 0, 2);
 	int sz = ftell(stdin);
-	if (!(_buf.rb = calloc(sz, sizeof(char)))) exit(1);
+	if (!(_buf.rb = calloc(sz + 1, sizeof(char)))) exit(1);
 	fseek(stdin, 0, 0);
 	fread(_buf.rb, 1, sz, stdin);
 }

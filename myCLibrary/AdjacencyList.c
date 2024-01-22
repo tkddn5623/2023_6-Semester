@@ -33,7 +33,7 @@ void GR_delete(Graph* graph) {
     free(graph->tails);
     free(graph);
 }
-void GR_addEdge(Graph* graph, int from, int to, int weight) {
+void GR_insert(Graph* graph, int from, int to, int weight) {
     graph->_edges[graph->edgecount].id = to;
     graph->_edges[graph->edgecount].weight = weight;
     graph->_edges[graph->edgecount].next = graph->tails[from]->next;
@@ -136,6 +136,7 @@ void Topological_Sort(int* sorted, Graph* graph) {
 * 2023.1.6  Fri, improved speed.
 * 2023.1.27 Fri, example changed to TSP.
 * 2023.7.18 Tue, example add (Topological_Sort)
+* 2024.1.22 Mon, change to snake cases
 */
 
 /*
