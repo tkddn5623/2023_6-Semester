@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "UnionFind.h"
+
 int* UF_init(int maxsize) {
     int* roots;
     if ((roots = calloc(maxsize, sizeof(int))) == NULL) exit(1);
