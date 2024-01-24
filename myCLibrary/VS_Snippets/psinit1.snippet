@@ -10,7 +10,11 @@
     <Snippet>
       <Code Language="Cpp">
         <![CDATA[#include <stdio.h>
-		#define MAXN (77777)
+		#define MAXN (100000)
+		#define BUFMAX (10000)
+        void stdin_getline(char* dest) {
+            for (*dest = 0, fgets(dest, BUFMAX, stdin); *dest & ~0x1f; dest++); *dest = 0;
+        }
         void solve$FUNCNAME$(int arr[], int N) {
 			
         }
@@ -19,7 +23,9 @@
 		    static int arr[MAXN];
 	        int N;
 	        scanf("%d", &N);
-            for (int i = 0; i < N; i++) { scanf("%d", &arr[i]); }
+            for (int i = 0; i < N; i++) { 
+			    scanf("%d", &arr[i]); 
+		    }
 	        solve$FUNCNAME$(arr, N);
         }]]>
       </Code>

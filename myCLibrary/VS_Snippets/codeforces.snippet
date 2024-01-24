@@ -4,31 +4,37 @@
     <Header>
       <Title>C style Codeforces init1</Title>
       <Description>C style Codeforces</Description>
-	  <Author>JungSangWoo</Author>
+      <Author>JungSangWoo</Author>
       <Shortcut>codeforces</Shortcut>
     </Header>
     <Snippet>
       <Code Language="Cpp">
         <![CDATA[#define __USE_MINGW_ANSI_STDIO 0
-		#include <stdio.h>
-		#define MAXN (77777)
+        #include <stdio.h>
+        #define MAXN (100000)
+        #define BUFMAX (10000)
+        void stdin_getline(char* dest) {
+            for (*dest = 0, fgets(dest, BUFMAX, stdin); *dest & ~0x1f; dest++); *dest = 0;
+        }
         void solve$FUNCNAME$(int arr[], int N) {
-			
+            
         }
         int main() {
-		    // freopen("i.txt", "r", stdin);
-		    static int arr[MAXN];
-	        int T;
-	        scanf("%d", &T);
+            // freopen("i.txt", "r", stdin);
+            static int arr[MAXN];
+            int T;
+            scanf("%d", &T);
             do {
-			    int N;
-				scanf("%d", &N);
-			    for (int i = 0; i < N; i++) { scanf("%d", &arr[i]); }
-		        solve$FUNCNAME$(arr, N);
-			} while(--T > 0);
+                int N;
+                scanf("%d", &N);
+                for (int i = 0; i < N; i++) { 
+                    scanf("%d", &arr[i]);
+                }
+                solve$FUNCNAME$(arr, N);
+            } while(--T > 0);
         }]]>
       </Code>
-	  <Declarations>
+      <Declarations>
         <Literal>
           <ID>FUNCNAME</ID>
           <Default>A</Default>
