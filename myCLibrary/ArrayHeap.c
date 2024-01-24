@@ -21,7 +21,7 @@ void AH_delete(ArrayHeap* pheap) {
     free(pheap->items);
     free(pheap);
 }
-int AH_isEmpty(ArrayHeap* pheap) {
+int AH_empty(ArrayHeap* pheap) {
     return pheap->size == 0;
 }
 void AH_push(ArrayHeap* pheap, Nodeinfo item) {
@@ -76,7 +76,7 @@ void AH_delete(ArrayHeap* pheap) {
     free(pheap->items);
     free(pheap);
 }
-int AH_isEmpty(ArrayHeap* pheap) {
+int AH_empty(ArrayHeap* pheap) {
     return pheap->size == 0;
 }
 void AH_push(ArrayHeap* pheap, int item) {

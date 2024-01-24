@@ -54,7 +54,7 @@ void GR_insert(Graph* graph, int from, int to, int weight) {
     for (int j = 1; j <= vtxSize; j++) distances[j] = INF;
     distances[start] = 0;
     AH_push(heap, (struct Pair) { start, 0 }, 0);
-    while (!AH_isEmpty(heap)) {
+    while (!AH_empty(heap)) {
         struct Pair e = AH_pop(heap);
         if (e.weight > distances[e.id]) continue;
         for (GNode* head = &graph->_edges[e.id], *cur = head->next; cur != head; cur = cur->next) {
@@ -117,7 +117,7 @@ void Topological_Sort(int* sorted, Graph* graph) {
         if (indgree[i] > 0) continue;
         AQ_push(queue, i);
     }
-    while (!AQ_isEmpty(queue)) {
+    while (!AQ_empty(queue)) {
         int vtx = AQ_pop(queue);
         sorted[sorted_len++] = vtx;
         GNode* head = &graph->_edges[vtx];
