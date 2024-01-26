@@ -50,15 +50,24 @@ Countpair* HT_find(const Hashtable* ht, int key) {
 	return NULL;
 }
 
-
-
+int tiny_hash_str(const char str[]) {
+	unsigned int h = 0;
+	char ch;
+	while (ch = (*str++)) { h = (h + ch) * 5381u + ch; }
+	return h & (HASH_BLOCK_SIZE - 1);
+}
 int tiny_hash_i64(unsigned long long k) {
 	return (k * 11400714819323198485llu) >> (64 - HASH_MSB_BITS);
 }
+
+
 
 /*
 * 2024-01-16 Tue
 *
 * The performance of linear probing is better than I think.
 * Especially when I consider cache hits ratio.
+*
+* 2024-01-26 Fri
+* Simple string hash func added.
 */
