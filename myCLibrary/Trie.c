@@ -1,19 +1,20 @@
 #include <stdlib.h>
-#include "Trie.h"
-/*
+
 #define MAXCOL (26)
+
 typedef struct _TreeNode {
-	struct _TreeNode* next[MAXCOL];
-	int state; // 1st bit: is final state?, 2nd bit: does it have child?
-} TrieNode;
+	int next[MAXCOL];
+	int state;
+} TNode;
+
 typedef struct {
-	TrieNode* nodes;
+	TNode* nodes;
 	int len;
 } Trie;
-*/
-Trie* Trie_new(int node) {
+
+Trie* Trie_new(const int size) {
 	Trie* t = malloc(sizeof(Trie)); if (!t) exit(1);
-	if (!(t->nodes = calloc(node, sizeof(TrieNode)))) exit(1);
+	t->nodes = calloc(size, sizeof(TNode)); if (!t->nodes) exit(1);
 	t->len = 1;
 	return t;
 }
@@ -22,32 +23,36 @@ void Trie_delete(Trie* trie) {
 	free(trie);
 }
 void Trie_insert(Trie* trie, const char* str) {
-	TrieNode* pn = &trie->nodes[0];
-	int value;
-	while (pn) {
-		value = *str++ - '0';
-		if (value < 0) {
-			pn->state |= 0x1;
-			break;
+	TNode* nodes = trie->nodes;
+	int value, cur = 0, len = trie->len;
+	while ((value = *str++ - 'a') >= 0) {
+		if (nodes[cur].next[value] == 0) {
+			nodes[cur].next[value] = len++;
+			nodes[cur].state |= 0x2;
 		}
-		if (!pn->next[value]) {
-			pn->next[value] = &trie->nodes[trie->len++];
-			pn->state |= 0x2;
-		}
-		pn = pn->next[value];
+		cur = nodes[cur].next[value];
 	}
+	nodes[cur].state |= 0x1;
+	trie->len = len;
 }
-int _Trie_search(TrieNode* node) {
-	if (node->state == 0x3) return 0;
-	else if (node->state == 0x2) {
+
+/*
+int _Trie_search(TNode* trie_nodes, int cur) {
+	if (trie_nodes[cur].state == 0x3) return 0;
+	else if (trie_nodes[cur].state == 0x2) {
 		for (int i = 0; i < MAXCOL; i++) {
-			if (node->next[i] && !_Trie_search(node->next[i])) return 0;
+			if (trie_nodes[cur].next[i] && !_Trie_search(trie_nodes, trie_nodes[cur].next[i])) return 0;
 		}
 	}
 	return 1;
 }
+*/
 
 
 /*
 * 2023.7.19 Wed
+*
+* 2024.1.27 Sat
+*
+* pointer array changed to int array (as real DFA)
 */
