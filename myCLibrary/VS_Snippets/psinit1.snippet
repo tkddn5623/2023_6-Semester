@@ -13,7 +13,7 @@
 		#define MAXN (100000)
 		#define BUFMAX (10000)
         void stdin_getline(char* dest) {
-            for (*dest = 0, fgets(dest, BUFMAX, stdin); *dest & ~0x1f; dest++); *dest = 0;
+            for (*dest = 0, fgets(dest, BUFMAX, stdin); *dest & ~0x1f; dest++);; *dest = 0;
         }
         void solve$FUNCNAME$(int arr[], int N) {
 			
