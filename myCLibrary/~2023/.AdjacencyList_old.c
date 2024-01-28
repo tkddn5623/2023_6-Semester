@@ -42,77 +42,29 @@ void GR_insert(Graph* graph, int from, int to, int weight) {
 }
 
 /*
-/////////// Dijkstra snippet (2024.01.27) ///////////////////////////////////////////
+// Dijkstra snippet (2023-11-26)
 
-#define INF  (1000000000)
-
-typedef struct {
-    int value;
-    int priority;
-} HNode;
-
-void solve1753_Dijkstra(int dist[], Graph* graph, int start) {
-    for (int j = graph->vtxsize, i = 0; i < j; i++) { dist[i] = INF; }
-    dist[start] = 0;
-
-    ArrayHeap* heap = AH_new(graph->edgesize);
-    AH_push(heap, (HNode) { start, 0 });
-
+	struct Pair {
+		int id;
+		int weight;
+	};
+    static int distances[MAXN + 1];
+    ArrayHeap* heap = AH_new(edgeSize);
+	
+    for (int j = 1; j <= vtxSize; j++) distances[j] = INF;
+    distances[start] = 0;
+    AH_push(heap, (struct Pair) { start, 0 }, 0);
     while (!AH_empty(heap)) {
-        HNode e = AH_pop(heap);
-
-        if (e.priority > dist[e.value]) continue;
-
-        for (GNode* head = &graph->_edges[e.value], *cur = head->next; cur != head; cur = cur->next) {
-            int weight = e.priority + cur->weight, id = cur->id;
-            if (weight < dist[id]) {
-                dist[id] = weight;
-                AH_push(heap, (HNode) { id, weight });
+        struct Pair e = AH_pop(heap);
+        if (e.weight > distances[e.id]) continue;
+        for (GNode* head = &graph->_edges[e.id], *cur = head->next; cur != head; cur = cur->next) {
+            int weight = e.weight + cur->weight;
+            if (weight < distances[cur->id]) {
+                AH_push(heap, (struct Pair) { cur->id, weight }, weight);
+                distances[cur->id] = weight;
             }
         }
     }
-
-    AH_delete(heap);
-}
-
-/////////// Bellman Ford snippet (2024.01.29) ///////////////////////////////////////
-
-void solve11657_Bellman_Ford(long long dist[], Graph* graph, int start) {
-	const int vtxmax = graph->vtxsize - 1;
-
-	// Assume there is no vertex 0.
-	for (int i = 1; i <= vtxmax; i++) { dist[i] = INF; }
-	dist[start] = 0;
-
-	// A loop of (vtxmax - 1) is enough to propagate.
-	for (int i = 0; i < vtxmax - 1; i++) for (int j = 1; j <= vtxmax; j++) {
-		for (GNode* head = &graph->_edges[j], *cur = head->next; cur != head; cur = cur->next) {
-			int weight = cur->weight, id = cur->id;
-			if (dist[j] == INF || dist[id] <= dist[j] + weight) continue;
-			dist[id] = dist[j] + weight;
-		}
-	}
-
-	// Minus cycle check
-	for (int j = 1; j <= vtxmax; j++) {
-		for (GNode* head = &graph->_edges[j], *cur = head->next; cur != head; cur = cur->next) {
-			int weight = cur->weight, id = cur->id;
-			if (dist[j] == INF || dist[id] <= dist[j] + weight) continue;
-			dist[0] = -INF;
-			goto LOOPOUT;
-		}
-	} LOOPOUT:;
-}
-
-/////////// Floyd_Warshall snippet (not adj list) (2024.01.29) //////////////////////
-
-void solve11404_Floyd_Warshall(int dist[][MAXV + 1], int vtxmax) {
-	for (int k = 1; k <= vtxmax; k++) for (int i = 1; i <= vtxmax; i++) for (int j = 1; j <= vtxmax; j++) {
-		dist[i][j] = Min(dist[i][j], dist[i][k] + dist[k][j]);
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
 
 int _travelingSalesman_impl(Graph* graph, int memo[][1 << MAXVTX], const int vtx, int visited_bit) {
     int dist_min;
