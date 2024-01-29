@@ -41,17 +41,17 @@ void GR_insert(Graph* graph, int from, int to, int weight) {
     graph->tails[from] = &graph->_edges[graph->edgecount++];
 }
 
-/*
 /////////// Dijkstra snippet (2024.01.27) ///////////////////////////////////////////
 
+/*
 #define INF  (1000000000)
-
 typedef struct {
     int value;
     int priority;
 } HNode;
+*/
 
-void solve1753_Dijkstra(int dist[], Graph* graph, int start) {
+void solve1753_Dijkstra(int dist[], const Graph* graph, int start) {
     for (int j = graph->vtxsize, i = 0; i < j; i++) { dist[i] = INF; }
     dist[start] = 0;
 
@@ -77,7 +77,7 @@ void solve1753_Dijkstra(int dist[], Graph* graph, int start) {
 
 /////////// Bellman Ford snippet (2024.01.29) ///////////////////////////////////////
 
-void solve11657_Bellman_Ford(long long dist[], Graph* graph, int start) {
+void solve11657_Bellman_Ford(long long dist[], const Graph* graph, int start) {
 	const int vtxmax = graph->vtxsize - 1;
 
 	// Assume there is no vertex 0.
@@ -112,9 +112,9 @@ void solve11404_Floyd_Warshall(int dist[][MAXV + 1], int vtxmax) {
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
-int _travelingSalesman_impl(Graph* graph, int memo[][1 << MAXVTX], const int vtx, int visited_bit) {
+int _travelingSalesman_impl(const Graph* graph, int memo[][1 << MAXVTX], const int vtx, int visited_bit) {
     int dist_min;
     const int vtxsize = graph->vtxsize;
     GNode* const head = &graph->_edges[vtx];
@@ -145,39 +145,43 @@ int travelingSalesman(Graph* graph) {
     return _travelingSalesman_impl(graph, memo, HOME, 1 << HOME);
 }
 
-/////////////////////////////////////////////////////////////////////////////
+/////// Topological Sort Snippet (2024.1.29) ////////////////////////////////////////
 
-void _Indgree(int* indgree, Graph* graph) {
-    int vtxsize = graph->vtxsize;
-    int edgecount = graph->edgecount;
-    const GNode* _edges = graph->_edges;
-    for (int i = vtxsize; i < edgecount; i++) {
-        indgree[_edges[i].id]++;
-    }
+void _Topological_Sort_Indgree(int indgree[], const Graph* graph) {
+	int vtxsize = graph->vtxsize;
+	int edgecount = graph->edgecount;
+	const GNode* _edges = graph->_edges;
+	for (int i = vtxsize; i < edgecount; i++) {
+		indgree[_edges[i].id]++;
+	}
 }
-void Topological_Sort(int* sorted, Graph* graph) {
-    const int vtxmax = graph->vtxsize - 1;
-    ArrayQueue* queue = AQ_new(vtxmax + 1);
-    int* indgree = calloc(vtxmax + 1, sizeof(int)); if (!indgree) exit(1);
-    int sorted_len = 0;
-    _Indgree(indgree, graph);
-    for (int i = 1; i <= vtxmax; i++) {
-        if (indgree[i] > 0) continue;
-        AQ_push(queue, i);
-    }
-    while (!AQ_empty(queue)) {
-        int vtx = AQ_pop(queue);
-        sorted[sorted_len++] = vtx;
-        GNode* head = &graph->_edges[vtx];
-        for (GNode* cur = head->next; cur != head; cur = cur->next) {
-            if (--indgree[cur->id] > 0) continue;
-            AQ_push(queue, cur->id);
-        }
-    }
-    AQ_delete(queue);
-    free(indgree);
+void Topological_Sort(int sorted[], const Graph* graph) {
+	const int vtxmax = graph->vtxsize - 1;
+	int sorted_len = 0;
+	int* indgree;
+
+	if (!(indgree = calloc(vtxmax + 1, sizeof(int)))) exit(1);
+	ArrayQueue* queue = AQ_new(vtxmax + 1);
+	_Topological_Sort_Indgree(indgree, graph);
+
+	for (int i = 1; i <= vtxmax; i++) {
+		if (indgree[i] > 0) continue;
+		AQ_push(queue, i);
+	}
+
+	while (!AQ_empty(queue)) {
+		int vtx = AQ_pop(queue);
+		sorted[sorted_len++] = vtx;
+		for (GNode* head = &graph->_edges[vtx], *cur = head->next; cur != head; cur = cur->next) {
+			if (--indgree[cur->id] > 0) continue;
+			AQ_push(queue, cur->id);
+		}
+	}
+
+	AQ_delete(queue);
+	free(indgree);
 }
-*/
+
 
 /*
 * 2022.9.21 Wed
@@ -185,6 +189,7 @@ void Topological_Sort(int* sorted, Graph* graph) {
 * 2023.1.27 Fri, example changed to TSP.
 * 2023.7.18 Tue, example add (Topological_Sort)
 * 2024.1.22 Mon, change to snake cases
+* 2024.1.29 Mon, examples renewal
 */
 
 /*
