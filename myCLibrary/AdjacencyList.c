@@ -41,7 +41,7 @@ void GR_insert(Graph* graph, int from, int to, int weight) {
     graph->tails[from] = &graph->_edges[graph->edgecount++];
 }
 
-/////////// Dijkstra snippet (2024.01.27) ///////////////////////////////////////////
+/////////// Dijkstra, Prim snippet (2024.01.27) /////////////////////////////////////
 
 /*
 #define INF  (1000000000)
@@ -73,6 +73,38 @@ void solve1753_Dijkstra(int dist[], const Graph* graph, int start) {
     }
 
     AH_delete(heap);
+}
+
+void solve1197_Prim(const Graph* graph) {
+	static int dist[MAXV + 1];
+	static int visited[MAXV + 1];
+	int mst_length = 0;
+
+	for (int j = graph->vtxsize, i = 1; i < j; i++) { dist[i] = INF; /*visited[i] = 0;*/ }
+	dist[1] = 0;
+
+	ArrayHeap* heap = AH_new(graph->edgesize);
+	AH_push(heap, (HNode) { 1, 0 });
+	
+	while (!AH_empty(heap)) {
+		HNode e = AH_pop(heap);
+		
+		if (visited[e.value]) continue;
+
+		visited[e.value] = 1;
+		mst_length += e.priority;
+
+		for (GNode* head = &graph->_edges[e.value], *cur = head->next; cur != head; cur = cur->next) {
+			int weight = cur->weight, id = cur->id;
+			if (!visited[id] && weight < dist[id]) {
+				dist[id] = weight;
+				AH_push(heap, (HNode) { id, weight });
+			}
+		}
+	}
+
+	AH_delete(heap);
+	printf("%d\n", mst_length);
 }
 
 /////////// Bellman Ford snippet (2024.01.29) ///////////////////////////////////////
