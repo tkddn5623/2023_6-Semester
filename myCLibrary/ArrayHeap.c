@@ -25,13 +25,13 @@ int AH_empty(const ArrayHeap* pheap) {
 	return pheap->size == 0;
 }
 void AH_push(ArrayHeap* pheap, HNode item) {
-	int parent, index = pheap->size + 1;
-	while (index > 1) {
-		if (item.priority >= pheap->items[(parent = index / 2)].priority) break; // Minheap
-		pheap->items[index] = pheap->items[parent];
-		index = parent;
+	int parent, child = pheap->size + 1;
+	while (child > 1) {
+		if (pheap->items[(parent = child / 2)].priority <= item.priority) break; // Minheap
+		pheap->items[child] = pheap->items[parent];
+		child = parent;
 	}
-	pheap->items[index] = item;
+	pheap->items[child] = item;
 	pheap->size++;
 }
 HNode AH_pop(ArrayHeap* pheap) {
@@ -71,13 +71,13 @@ int AH_empty(ArrayHeap* pheap) {
     return pheap->size == 0;
 }
 void AH_push(ArrayHeap* pheap, int item) {
-	int parent, index = pheap->size + 1;
-	while (index > 1) {
-		if (item >= pheap->items[(parent = index / 2)]) break; // Minheap
-		pheap->items[index] = pheap->items[parent];
-		index = parent;
+	int parent, child = pheap->size + 1;
+	while (child > 1) {
+		if (pheap->items[(parent = child / 2)] <= item) break; // Minheap
+		pheap->items[child] = pheap->items[parent];
+		child = parent;
 	}
-	pheap->items[index] = item;
+	pheap->items[child] = item;
 	pheap->size++;
 }
 int AH_pop(ArrayHeap* pheap) {
