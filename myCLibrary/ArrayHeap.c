@@ -86,7 +86,7 @@ int AH_pop(ArrayHeap* pheap) {
 	const int last = pheap->items[size];
 	int child, parent = 1;
 	while ((child = parent * 2) <= size) {
-		if (child < size && pheap->items[child + 1] < pheap->items[child]) child++; //Minheap
+		if (child < size && pheap->items[child + 1] < pheap->items[child]) child++; // Minheap
 		if (last <= pheap->items[child]) break; // Minheap
 		pheap->items[parent] = pheap->items[child];
 		parent = child;
