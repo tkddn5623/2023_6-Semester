@@ -1,46 +1,21 @@
-#include <stdlib.h>
-#include <string.h>
-#include "LinearSieve.h"
-
-int* getPrimeList(const int maxprime, int* psize) {
-	int length = 0;
-	int* factorList = calloc(maxprime + 2, sizeof(int)); if (!factorList) exit(1);
-	int* primeList = calloc(maxprime, sizeof(int)); if(!primeList) exit(1);
-	int* shrunkList;
-
-	factorList[0] = 0; factorList[1] = 0;
-	for (int i = 2; i <= maxprime; i++) {
-		if (!factorList[i]) primeList[length++] = i;
-		for (int j = 0; j < length; j++) {
-			if (i * primeList[j] > maxprime) break;
-			factorList[i * primeList[j]] = 1;
-			if (i % primeList[j] == 0) break;
+int linear_sieve(int Dest_factors[], int Dest_primes[], const int max) {
+	int plen = 0;
+	Dest_factors[0] = 0;
+	Dest_factors[1] = 0;
+	for (int i = 2; i <= max; i++) {
+		if (!Dest_factors[i]) Dest_primes[plen++] = i;
+		for (int j = 0; j < plen; j++) {
+			if (i * Dest_primes[j] > max) break;
+			Dest_factors[i * Dest_primes[j]] = Dest_primes[j];
+			if (i % Dest_primes[j] == 0) break;
 		}
 	}
-	free(factorList);
-
-	shrunkList = calloc(length, sizeof(int)); if(!shrunkList) exit(1);
-	memcpy(shrunkList, primeList, length * sizeof(int));
-	free(primeList);
-
-	if (psize != NULL) *psize = length;
-	return shrunkList;
+	return plen;
 }
 
-int* getFactorList(const int maxprime) {
-	int length = 0;
-	int* factorList = calloc(maxprime + 2, sizeof(int)); if (!factorList) exit(1);
-	int* primeList = calloc(maxprime, sizeof(int)); if (!primeList) exit(1);
-	
-	factorList[0] = 0; factorList[1] = 0;
-	for (int i = 2; i <= maxprime; i++) {
-		if (!factorList[i]) primeList[length++] = i;
-		for (int j = 0; j < length; j++) {
-			if (i * primeList[j] > maxprime) break;
-			factorList[i * primeList[j]] = primeList[j];
-			if (i % primeList[j] == 0) break;
-		}
-	}
-	free(primeList);
-	return factorList;
-}
+/*
+* 2024.2.6
+* Linear sieve renewal
+* (Reference: codeforces.com/blog/entry/54090)
+*
+/
