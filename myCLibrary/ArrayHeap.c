@@ -7,14 +7,20 @@ typedef struct {
 } HNode;
 
 typedef struct {
-    HNode* items;
-    int size;
+	HNode* items;
+	int size;
+#ifdef AUTOMATIC_RESIZE
+	int capacity;
+#endif
 } ArrayHeap;
 
 ArrayHeap* AH_new(int max) {
 	ArrayHeap* pheap;
 	if (!(pheap = calloc(1, sizeof(ArrayHeap)))) exit(1);
 	if (!(pheap->items = calloc(max + 1, sizeof(HNode)))) exit(1);
+#ifdef AUTOMATIC_RESIZE
+	pheap->capacity = max + 1;
+#endif
 	return pheap;
 }
 void AH_delete(ArrayHeap* pheap) {
@@ -33,6 +39,11 @@ void AH_push(ArrayHeap* pheap, HNode item) {
 	}
 	pheap->items[child] = item;
 	pheap->size++;
+#ifdef AUTOMATIC_RESIZE
+	if (pheap->size == pheap->capacity - 1) {
+		pheap->items = realloc(pheap->items, (pheap->capacity *= 2) * sizeof(HNode));
+	}
+#endif
 }
 HNode AH_pop(ArrayHeap* pheap) {
 	const int size = pheap->size;
@@ -55,12 +66,18 @@ HNode AH_pop(ArrayHeap* pheap) {
 typedef struct {
     int* items;
     int size;
+#ifdef AUTOMATIC_RESIZE
+	int capacity;
+#endif
 } ArrayHeap;
 
 ArrayHeap* AH_new(int max) {
     ArrayHeap* pheap;
     if (!(pheap = calloc(1, sizeof(ArrayHeap)))) exit(1);
     if (!(pheap->items = calloc(max + 1, sizeof(int)))) exit(1);
+#ifdef AUTOMATIC_RESIZE
+	pheap->capacity = max + 1;
+#endif
     return pheap;
 }
 void AH_delete(ArrayHeap* pheap) {
@@ -79,6 +96,11 @@ void AH_push(ArrayHeap* pheap, int item) {
 	}
 	pheap->items[child] = item;
 	pheap->size++;
+#ifdef AUTOMATIC_RESIZE
+	if (pheap->size == pheap->capacity - 1) {
+		pheap->items = realloc(pheap->items, (pheap->capacity *= 2) * sizeof(int));
+	}
+#endif
 }
 int AH_pop(ArrayHeap* pheap) {
 	const int size = pheap->size;
@@ -114,4 +136,5 @@ int AH_isFull(ArrayHeap* pheap) {
 /*
 * 2024-01-04: Modify to cleaner code
 * 2024.02.02: Unnecessary variables deleted
+* 2024.02.10: Automatic resize support
 */
