@@ -31,12 +31,32 @@ Element AD_front(const ArrayDeque* pdeque) {
 Element AD_back(const ArrayDeque* pdeque) {
 	return pdeque->items[(pdeque->rear - 1 + pdeque->capacity) & (pdeque->capacity - 1)];
 }
+#ifdef AUTOMATIC_RESIZE
+void AD_resize(ArrayDeque* pdeque) {
+	const int front = pdeque->front, rear = pdeque->rear, capacity = pdeque->capacity;
+	const int sz = (rear - front + capacity) & (capacity - 1);
+	if (sz == capacity - 1) {
+		Element* items2 = calloc(capacity * 2, sizeof(Element));
+		for (int i = 0; i < sz; i++) {
+			items2[i] = pdeque->items[(front + i) & (capacity - 1)];
+		}
+		free(pdeque->items);
+		*pdeque = (ArrayDeque){ items2, capacity * 2, 0, sz };
+	}
+}
+#endif
 void AD_push_front(ArrayDeque* pdeque, Element item) {
+#ifdef AUTOMATIC_RESIZE
+	AD_resize(pdeque);
+#endif
 	const int f_before = (pdeque->front - 1 + pdeque->capacity) & (pdeque->capacity - 1);
 	pdeque->front = f_before;
 	pdeque->items[f_before] = item;
 }
 void AD_push_back(ArrayDeque* pdeque, Element item) {
+#ifdef AUTOMATIC_RESIZE
+	AD_resize(pdeque);
+#endif
 	const int rear = pdeque->rear;
 	pdeque->rear = (rear + 1) & (pdeque->capacity - 1);
 	pdeque->items[rear] = item;
@@ -52,17 +72,22 @@ Element AD_pop_back(ArrayDeque* pdeque) {
 	return pdeque->items[r_before];
 }
 
-
+/*
 int AD_full(const ArrayDeque* pdeque) {
 	return pdeque->front == ((pdeque->rear + 1) & (pdeque->capacity - 1));
 }
 int AD_size(const ArrayDeque* pdeque) {
 	return (pdeque->rear - pdeque->front + pdeque->capacity) & (pdeque->capacity - 1);
 }
+*/
+
+
 
 /*
 * 2024-01-08 Mon.
-*
 * Improved readability
 * Modular operation optimization
+*
+* 2024.2.11 Sun
+* Dynamic resize support (But, unlike stack and heap, it is slow)
 */

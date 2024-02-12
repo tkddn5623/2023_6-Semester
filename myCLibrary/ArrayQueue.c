@@ -25,7 +25,24 @@ void AQ_delete(ArrayQueue* pqueue) {
 int AQ_empty(const ArrayQueue* pqueue) {
 	return pqueue->front == pqueue->rear;
 }
+#ifdef AUTOMATIC_RESIZE
+void AQ_resize(ArrayQueue* pqueue) {
+	const int front = pqueue->front, rear = pqueue->rear, capacity = pqueue->capacity;
+	const int sz = (rear - front + capacity) & (capacity - 1);
+	if (sz == capacity - 1) {
+		Element* items2 = calloc(capacity * 2, sizeof(Element));
+		for (int i = 0; i < sz; i++) {
+			items2[i] = pqueue->items[(front + i) & (capacity - 1)];
+		}
+		free(pqueue->items);
+		*pqueue = (ArrayQueue){ items2, capacity * 2, 0, sz };
+	}
+}
+#endif
 void AQ_push(ArrayQueue* pqueue, Element item) {
+#ifdef AUTOMATIC_RESIZE
+	AQ_resize(pqueue);
+#endif
 	const int rear = pqueue->rear;
 	pqueue->rear = (rear + 1) & (pqueue->capacity - 1);
 	pqueue->items[rear] = item;
@@ -39,24 +56,19 @@ Element AQ_front(const ArrayQueue* pqueue) {
 	return pqueue->items[pqueue->front];
 }
 
-
+/*
 int AQ_full(const ArrayQueue* pqueue) {
 	return pqueue->front == ((pqueue->rear + 1) & (pqueue->capacity - 1));
 }
 int AQ_size(const ArrayQueue* pqueue) {
 	return (pqueue->rear - pqueue->front + pqueue->capacity) & (pqueue->capacity - 1);
 }
-
-/*
-* In its strict definition, queues do not have this feature.
-* Element AQ_back(const ArrayQueue* pqueue) {
-*	return pqueue->items[(pqueue->rear + pqueue->capacity - 1) & (pqueue->capacity - 1)];
-*}
 */
+
+
 
 /*
 * 2024-01-04 Thu
-*
 * The optimized Queue
 *
 * By replacing the % operation with bitwise &,
@@ -64,10 +76,11 @@ int AQ_size(const ArrayQueue* pqueue) {
 *
 *
 * 2024-01-08 Mon
-*
 * Camel cases changed to snake cases
 *
 * 2024.1.22 Mon
-*
 * AQ_front moved below.
+*
+* 2024.2.11 Sun
+* Dynamic resize support (But, unlike stack and heap, it is slow)
 */

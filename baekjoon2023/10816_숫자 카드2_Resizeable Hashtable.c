@@ -1,5 +1,8 @@
+#include <stdio.h>
 #include <stdlib.h>
 
+#define AUTOMATIC_RESIZE
+#define MAXN       (500000)
 #define HASH_EMPTY (1 << 31)
 
 typedef struct {
@@ -74,28 +77,27 @@ void HT_insert_or_change(Hashtable* ht, int key, int value) {
 		if (key2 == key) { ht->bucket[index].value += value; return; }
 	}
 }
+int main() {
+	//freopen("i.txt", "r", stdin);
+	int N, M;
 
-int tiny_hash_str(const char str[]) {
-	unsigned int h = 0;
-	char ch;
-	while (ch = (*str++)) { h = (h + ch) * 5381u + ch; }
-	return h & (HASH_BLOCK_SIZE - 1);
+	scanf("%d", &N);
+
+	Hashtable* ht = HT_new(1024);
+
+	for (int i = 0; i < N; i++) {
+		int temp;
+		scanf("%d", &temp);
+		HT_insert_or_change(ht, temp, 1);
+	}
+
+	scanf("%d", &M);
+
+	for (int i = 0; i < M; i++) {
+		int temp;
+		scanf("%d", &temp);
+		printf("%d ", HT_find(ht, temp)->value);
+	}
+
+	HT_delete(ht);
 }
-int tiny_hash_i64(unsigned long long k, int bits) {
-	return (k * 11400714819323198485llu) >> (64 - bits);
-}
-
-
-
-/*
-* 2024-01-16 Tue
-*
-* The performance of linear probing is better than I think.
-* Especially when I consider cache hits ratio.
-*
-* 2024-01-26 Fri
-* Simple string hash func added.
-*
-* 2024.2.12 Mon
-* Resizeable hash table supported.
-*/

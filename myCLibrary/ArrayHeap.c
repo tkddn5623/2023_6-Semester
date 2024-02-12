@@ -31,6 +31,11 @@ int AH_empty(const ArrayHeap* pheap) {
 	return pheap->size == 0;
 }
 void AH_push(ArrayHeap* pheap, HNode item) {
+#ifdef AUTOMATIC_RESIZE
+	if (pheap->size == pheap->capacity - 1) {
+		pheap->items = realloc(pheap->items, (pheap->capacity *= 2) * sizeof(HNode));
+	}
+#endif
 	int parent, child = pheap->size + 1;
 	while (child > 1) {
 		if (pheap->items[(parent = child / 2)].priority <= item.priority) break; // Minheap
@@ -39,11 +44,6 @@ void AH_push(ArrayHeap* pheap, HNode item) {
 	}
 	pheap->items[child] = item;
 	pheap->size++;
-#ifdef AUTOMATIC_RESIZE
-	if (pheap->size == pheap->capacity - 1) {
-		pheap->items = realloc(pheap->items, (pheap->capacity *= 2) * sizeof(HNode));
-	}
-#endif
 }
 HNode AH_pop(ArrayHeap* pheap) {
 	const int size = pheap->size;

@@ -31,12 +31,12 @@ Element AS_top(const ArrayStack* pstack) {
 	return pstack->items[pstack->top];
 }
 void AS_push(ArrayStack* pstack, int item) {
-	pstack->items[++(pstack->top)] = item;
 #ifdef AUTOMATIC_RESIZE
 	if (pstack->top == pstack->capacity - 1) {
 		pstack->items = realloc(pstack->items, (pstack->capacity *= 2) * sizeof(Element));
 	}
 #endif
+	pstack->items[++(pstack->top)] = item;
 }
 char AS_pop(ArrayStack* pstack) {
 	return pstack->items[(pstack->top)--];
