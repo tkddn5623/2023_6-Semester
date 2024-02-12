@@ -36,8 +36,7 @@ void HT_delete(Hashtable* ht) {
 	free(ht);
 }
 Keypair* HT_find(const Hashtable* ht, int key) {
-	int index = tiny_hash_i32(key, ht->bucketbits);
-	for (int sz = 1 << ht->bucketbits; ; index = (index + 1) & (sz - 1)) {
+	for (int sz = 1 << ht->bucketbits, index = tiny_hash_i32(key, ht->bucketbits); ; index = (index + 1) & (sz - 1)) {
 		int key2 = ht->bucket[index].key;
 		if (key2 == HASH_EMPTY || key2 == key) return &ht->bucket[index];
 	}
@@ -52,8 +51,7 @@ void HT_resize(Hashtable* ht) {
 	}
 	for (int j = sz / 2, i = 0; i < j; i++) {
 		if (ht->bucket[i].key == HASH_EMPTY) continue;
-		int index = tiny_hash_i32(ht->bucket[i].key, bits2);
-		for (; ; index = (index + 1) & (sz - 1)) {
+		for (int index = tiny_hash_i32(ht->bucket[i].key, bits2); ; index = (index + 1) & (sz - 1)) {
 			if (bucket2[index].key == HASH_EMPTY) { bucket2[index] = ht->bucket[i]; break; }
 		}
 	}
@@ -63,8 +61,7 @@ void HT_resize(Hashtable* ht) {
 }
 #endif
 void HT_insert_or_change(Hashtable* ht, int key, int value) {
-	int index = tiny_hash_i32(key, ht->bucketbits);
-	for (int sz = 1 << ht->bucketbits; ; index = (index + 1) & (sz - 1)) {
+	for (int sz = 1 << ht->bucketbits, index = tiny_hash_i32(key, ht->bucketbits); ; index = (index + 1) & (sz - 1)) {
 		int key2 = ht->bucket[index].key;
 		if (key2 == HASH_EMPTY) {
 			ht->bucket[index].key = key;

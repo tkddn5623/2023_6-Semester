@@ -15,6 +15,14 @@ typedef struct {
 #endif
 } Hashtable;
 
+typedef struct {
+	Keypair* bucket;
+	int bucketbits;
+#ifdef AUTOMATIC_RESIZE
+	int bucketload;
+#endif
+} Hashtable;
+
 int tiny_hash_i32(unsigned int k, int bits) {
 	return (k * 2654435769u) >> (32 - bits);
 }
@@ -33,8 +41,7 @@ void HT_delete(Hashtable* ht) {
 	free(ht);
 }
 Keypair* HT_find(const Hashtable* ht, int key) {
-	int index = tiny_hash_i32(key, ht->bucketbits);
-	for (int sz = 1 << ht->bucketbits; ; index = (index + 1) & (sz - 1)) {
+	for (int sz = 1 << ht->bucketbits, index = tiny_hash_i32(key, ht->bucketbits); ; index = (index + 1) & (sz - 1)) {
 		int key2 = ht->bucket[index].key;
 		if (key2 == HASH_EMPTY || key2 == key) return &ht->bucket[index];
 	}
@@ -43,14 +50,13 @@ Keypair* HT_find(const Hashtable* ht, int key) {
 #ifdef AUTOMATIC_RESIZE
 void HT_resize(Hashtable* ht) {
 	const int bits2 = ht->bucketbits + 1, sz = 1 << bits2;
-	Keypair* bucket2 = calloc(sz, sizeof(Keypair)); if (!bucket2) exit(1);
+	Keypair* bucket2 = calloc(sz, sizeof(Keypair));
 	for (int i = 0; i < sz; i++) {
 		bucket2[i].key = HASH_EMPTY;
 	}
 	for (int j = sz / 2, i = 0; i < j; i++) {
 		if (ht->bucket[i].key == HASH_EMPTY) continue;
-		int index = tiny_hash_i32(ht->bucket[i].key, bits2);
-		for (; ; index = (index + 1) & (sz - 1)) {
+		for (int index = tiny_hash_i32(ht->bucket[i].key, bits2); ; index = (index + 1) & (sz - 1)) {
 			if (bucket2[index].key == HASH_EMPTY) { bucket2[index] = ht->bucket[i]; break; }
 		}
 	}
@@ -60,8 +66,7 @@ void HT_resize(Hashtable* ht) {
 }
 #endif
 void HT_insert_or_change(Hashtable* ht, int key, int value) {
-	int index = tiny_hash_i32(key, ht->bucketbits);
-	for (int sz = 1 << ht->bucketbits; ; index = (index + 1) & (sz - 1)) {
+	for (int sz = 1 << ht->bucketbits, index = tiny_hash_i32(key, ht->bucketbits); ; index = (index + 1) & (sz - 1)) {
 		int key2 = ht->bucket[index].key;
 		if (key2 == HASH_EMPTY) {
 			ht->bucket[index].key = key;

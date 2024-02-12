@@ -1,44 +1,38 @@
 #include <stdlib.h>
 
 typedef struct _GNode {
-    int id;
-    int weight;
-    struct _GNode* next;
+	union { struct { int id, weight; }; struct _GNode* tail; };
+	struct _GNode* next;
 } GNode;
 
 typedef struct {
-    int vtxsize;
-    int edgesize;
-    int edgecount;
-    GNode** tails;
-    GNode* _edges;
+	GNode* edges;
+	int vtxsize;
+	int edgesize;
+	int edgecount;
 } Graph;
 
 Graph* GR_new(int vtxsize, int edgesize) {
-    Graph* graph;
-    if ((graph = malloc(sizeof(Graph))) == NULL) exit(1);
-    if ((graph->tails = calloc(vtxsize, sizeof(GNode*))) == NULL) exit(1);
-    if ((graph->_edges = calloc(edgesize + vtxsize, sizeof(GNode))) == NULL) exit(1);
-    graph->vtxsize = vtxsize;
-    graph->edgesize = edgesize + vtxsize;
-    graph->edgecount = vtxsize;
-    for (int i = 0; i < vtxsize; i++) {
-        graph->tails[i] = &graph->_edges[i];
-        graph->tails[i]->next = graph->tails[i];
-    }
-    return graph;
+	Graph* graph;
+	if (!(graph = malloc(sizeof(Graph)))) exit(1);
+	if (!(graph->edges = calloc(edgesize + vtxsize, sizeof(GNode)))) exit(1);
+	graph->vtxsize = vtxsize;
+	graph->edgesize = edgesize + vtxsize;
+	graph->edgecount = vtxsize;
+	for (int i = 0; i < vtxsize; i++) {
+		graph->edges[i].next = &graph->edges[i];
+		graph->edges[i].tail = &graph->edges[i];
+	}
+	return graph;
 }
 void GR_delete(Graph* graph) {
-    free(graph->_edges);
-    free(graph->tails);
-    free(graph);
+	free(graph->edges);
+	free(graph);
 }
 void GR_insert(Graph* graph, int from, int to, int weight) {
-    graph->_edges[graph->edgecount].id = to;
-    graph->_edges[graph->edgecount].weight = weight;
-    graph->_edges[graph->edgecount].next = graph->tails[from]->next;
-    graph->tails[from]->next = &graph->_edges[graph->edgecount];
-    graph->tails[from] = &graph->_edges[graph->edgecount++];
+	graph->edges[graph->edgecount] = (GNode){ .id = to, .weight = weight, .next = &graph->edges[from] };
+	graph->edges[from].tail->next = &graph->edges[graph->edgecount];
+	graph->edges[from].tail = &graph->edges[graph->edgecount++];
 }
 
 /////////// Dijkstra, Prim snippet (2024.01.27) /////////////////////////////////////
@@ -63,7 +57,7 @@ void solve1753_Dijkstra(int dist[], const Graph* graph, int start) {
 
         if (e.priority > dist[e.value]) continue;
 
-        for (GNode* head = &graph->_edges[e.value], *cur = head->next; cur != head; cur = cur->next) {
+        for (GNode* head = &graph->edges[e.value], *cur = head->next; cur != head; cur = cur->next) {
             int weight = e.priority + cur->weight, id = cur->id;
             if (weight < dist[id]) {
                 dist[id] = weight;
@@ -94,7 +88,7 @@ void solve1197_Prim(const Graph* graph) {
 		visited[e.value] = 1;
 		mst_length += e.priority;
 
-		for (GNode* head = &graph->_edges[e.value], *cur = head->next; cur != head; cur = cur->next) {
+		for (GNode* head = &graph->edges[e.value], *cur = head->next; cur != head; cur = cur->next) {
 			int weight = cur->weight, id = cur->id;
 			if (!visited[id] && weight < dist[id]) {
 				dist[id] = weight;
@@ -118,7 +112,7 @@ void solve11657_Bellman_Ford(long long dist[], const Graph* graph, int start) {
 
 	// A loop of (vtxmax - 1) is enough to propagate.
 	for (int i = 0; i < vtxmax - 1; i++) for (int j = 1; j <= vtxmax; j++) {
-		for (GNode* head = &graph->_edges[j], *cur = head->next; cur != head; cur = cur->next) {
+		for (GNode* head = &graph->edges[j], *cur = head->next; cur != head; cur = cur->next) {
 			int weight = cur->weight, id = cur->id;
 			if (dist[j] == INF || dist[id] <= dist[j] + weight) continue;
 			dist[id] = dist[j] + weight;
@@ -127,7 +121,7 @@ void solve11657_Bellman_Ford(long long dist[], const Graph* graph, int start) {
 
 	// Minus cycle check
 	for (int j = 1; j <= vtxmax; j++) {
-		for (GNode* head = &graph->_edges[j], *cur = head->next; cur != head; cur = cur->next) {
+		for (GNode* head = &graph->edges[j], *cur = head->next; cur != head; cur = cur->next) {
 			int weight = cur->weight, id = cur->id;
 			if (dist[j] == INF || dist[id] <= dist[j] + weight) continue;
 			dist[0] = -INF;
@@ -149,7 +143,7 @@ void solve11404_Floyd_Warshall(int dist[][MAXV + 1], int vtxmax) {
 int _travelingSalesman_impl(const Graph* graph, int memo[][1 << MAXVTX], const int vtx, int visited_bit) {
     int dist_min;
     const int vtxsize = graph->vtxsize;
-    GNode* const head = &graph->_edges[vtx];
+    GNode* const head = &graph->edges[vtx];
     //if (memo[vtx][visited_bit] != -1) return memo[vtx][visited_bit];
     if (visited_bit == (1 << vtxsize) - 1) {
         for (GNode* cur = head->next; cur != head; cur = cur->next) {
@@ -182,9 +176,9 @@ int travelingSalesman(Graph* graph) {
 void _Topological_Sort_Indgree(int indgree[], const Graph* graph) {
 	int vtxsize = graph->vtxsize;
 	int edgecount = graph->edgecount;
-	const GNode* _edges = graph->_edges;
+	const GNode* edges = graph->edges;
 	for (int i = vtxsize; i < edgecount; i++) {
-		indgree[_edges[i].id]++;
+		indgree[edges[i].id]++;
 	}
 }
 void Topological_Sort(int sorted[], const Graph* graph) {
@@ -204,7 +198,7 @@ void Topological_Sort(int sorted[], const Graph* graph) {
 	while (!AQ_empty(queue)) {
 		int vtx = AQ_pop(queue);
 		sorted[sorted_len++] = vtx;
-		for (GNode* head = &graph->_edges[vtx], *cur = head->next; cur != head; cur = cur->next) {
+		for (GNode* head = &graph->edges[vtx], *cur = head->next; cur != head; cur = cur->next) {
 			if (--indgree[cur->id] > 0) continue;
 			AQ_push(queue, cur->id);
 		}
@@ -222,9 +216,10 @@ void Topological_Sort(int sorted[], const Graph* graph) {
 * 2023.7.18 Tue, example add (Topological_Sort)
 * 2024.1.22 Mon, change to snake cases
 * 2024.1.29 Mon, examples renewal
+* 2024.2.12 Mon, Using union to represent tail: save more memory space
 */
 
 /*
 GNode* const head = graph->tails[vtx]->next; //Slower
-GNode* const head = &graph->_edges[vtx];     //Faster (in TSP, difference is small)
+GNode* const head = &graph->edges[vtx];     //Faster (in TSP, difference is small)
 */

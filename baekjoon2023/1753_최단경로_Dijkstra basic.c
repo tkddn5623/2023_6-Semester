@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define AUTOMATIC_RESIZE
 #define MAXV (20000)
 #define INF  (1000000000)
 
@@ -10,22 +11,23 @@ typedef struct {
 } HNode;
 
 typedef struct _GNode {
-	int id;
-	int weight;
+	union { struct { int id, weight; }; struct _GNode* tail; };
 	struct _GNode* next;
 } GNode;
 
 typedef struct {
 	HNode* items;
 	int size;
+#ifdef AUTOMATIC_RESIZE
+	int capacity;
+#endif
 } ArrayHeap;
 
 typedef struct {
 	int vtxsize;
 	int edgesize;
 	int edgecount;
-	GNode** tails;
-	GNode* _edges;
+	GNode* edges;
 } Graph;
 
 
@@ -33,6 +35,9 @@ ArrayHeap* AH_new(int max) {
 	ArrayHeap* pheap;
 	if (!(pheap = calloc(1, sizeof(ArrayHeap)))) exit(1);
 	if (!(pheap->items = calloc(max + 1, sizeof(HNode)))) exit(1);
+#ifdef AUTOMATIC_RESIZE
+	pheap->capacity = max + 1;
+#endif
 	return pheap;
 }
 void AH_delete(ArrayHeap* pheap) {
@@ -43,13 +48,18 @@ int AH_empty(ArrayHeap* pheap) {
 	return pheap->size == 0;
 }
 void AH_push(ArrayHeap* pheap, HNode item) {
-	int parent, index = pheap->size + 1;
-	while (index > 1) {
-		if (item.priority >= pheap->items[(parent = index / 2)].priority) break; // Minheap
-		pheap->items[index] = pheap->items[parent];
-		index = parent;
+#ifdef AUTOMATIC_RESIZE
+	if (pheap->size == pheap->capacity - 1) {
+		pheap->items = realloc(pheap->items, (pheap->capacity *= 2) * sizeof(HNode)); // if (!pheap->items) exit(1);
 	}
-	pheap->items[index] = item;
+#endif
+	int parent, child = pheap->size + 1;
+	while (child > 1) {
+		if (pheap->items[(parent = child / 2)].priority <= item.priority) break; // Minheap
+		pheap->items[child] = pheap->items[parent];
+		child = parent;
+	}
+	pheap->items[child] = item;
 	pheap->size++;
 }
 HNode AH_pop(ArrayHeap* pheap) {
@@ -69,35 +79,31 @@ HNode AH_pop(ArrayHeap* pheap) {
 }
 Graph* GR_new(int vtxsize, int edgesize) {
 	Graph* graph;
-	if ((graph = malloc(sizeof(Graph))) == NULL) exit(1);
-	if ((graph->tails = calloc(vtxsize, sizeof(GNode*))) == NULL) exit(1);
-	if ((graph->_edges = calloc(edgesize + vtxsize, sizeof(GNode))) == NULL) exit(1);
+	if (!(graph = malloc(sizeof(Graph)))) exit(1);
+	if (!(graph->edges = calloc(edgesize + vtxsize, sizeof(GNode)))) exit(1);
 	graph->vtxsize = vtxsize;
 	graph->edgesize = edgesize + vtxsize;
 	graph->edgecount = vtxsize;
 	for (int i = 0; i < vtxsize; i++) {
-		graph->tails[i] = &graph->_edges[i];
-		graph->tails[i]->next = graph->tails[i];
+		graph->edges[i].next = &graph->edges[i];
+		graph->edges[i].tail = &graph->edges[i];
 	}
 	return graph;
 }
 void GR_delete(Graph* graph) {
-	free(graph->_edges);
-	free(graph->tails);
+	free(graph->edges);
 	free(graph);
 }
 void GR_insert(Graph* graph, int from, int to, int weight) {
-	graph->_edges[graph->edgecount].id = to;
-	graph->_edges[graph->edgecount].weight = weight;
-	graph->_edges[graph->edgecount].next = graph->tails[from]->next;
-	graph->tails[from]->next = &graph->_edges[graph->edgecount];
-	graph->tails[from] = &graph->_edges[graph->edgecount++];
+	graph->edges[graph->edgecount] = (GNode){ .id = to, .weight = weight, .next = &graph->edges[from] };
+	graph->edges[from].tail->next = &graph->edges[graph->edgecount];
+	graph->edges[from].tail = &graph->edges[graph->edgecount++];
 }
 void solve1753_dijkstra(int dist[], Graph* graph, int start) {
 	for (int j = graph->vtxsize, i = 0; i < j; i++) { dist[i] = INF; }
 	dist[start] = 0;
 
-	ArrayHeap* heap = AH_new(graph->edgesize);
+	ArrayHeap* heap = AH_new(1024);
 	AH_push(heap, (HNode) { start, 0 });
 
 	while (!AH_empty(heap)) {
@@ -105,7 +111,7 @@ void solve1753_dijkstra(int dist[], Graph* graph, int start) {
 
 		if (e.priority > dist[e.value]) continue;
 
-		for (GNode* head = &graph->_edges[e.value], *cur = head->next; cur != head; cur = cur->next) {
+		for (GNode* head = &graph->edges[e.value], *cur = head->next; cur != head; cur = cur->next) {
 			int weight = e.priority + cur->weight, id = cur->id;
 			if (weight < dist[id]) {
 				dist[id] = weight;
