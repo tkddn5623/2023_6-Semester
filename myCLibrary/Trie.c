@@ -12,7 +12,7 @@ typedef struct {
 	int len;
 } Trie;
 
-Trie* Trie_new(const int size) {
+Trie* Trie_new(int size) {
 	Trie* t = malloc(sizeof(Trie)); if (!t) exit(1);
 	t->nodes = calloc(size, sizeof(TNode)); if (!t->nodes) exit(1);
 	t->len = 1;
@@ -27,6 +27,13 @@ void Trie_insert(Trie* trie, const char* str) {
 	int value, cur = 0, len = trie->len;
 	while ((value = *str++ - 'a') >= 0) {
 		if (nodes[cur].next[value] == 0) {
+#ifdef AUTOMATIC_RESIZE
+			if (len == trie->capacity) {
+				nodes = realloc(nodes, (trie->capacity *= 2) * sizeof(TNode)); if (!nodes) exit(1);
+				trie->nodes = nodes;
+			}
+#endif
+			nodes[len] = (TNode){ 0 };
 			nodes[cur].next[value] = len++;
 			nodes[cur].state |= 0x2;
 		}
@@ -51,8 +58,9 @@ int _Trie_search(TNode* trie_nodes, int cur) {
 
 /*
 * 2023.7.19 Wed
-*
 * 2024.1.27 Sat
-*
 * pointer array changed to int array (as real DFA)
+*
+* 2024.2.13 Tue
+* Resizable trie
 */
