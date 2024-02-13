@@ -10,6 +10,9 @@ typedef struct _TreeNode {
 typedef struct {
 	TNode* nodes;
 	int len;
+#ifdef AUTOMATIC_RESIZE
+	int capacity;
+#endif
 } Trie;
 
 Trie* Trie_new(int size) {
@@ -32,8 +35,8 @@ void Trie_insert(Trie* trie, const char* str) {
 				nodes = realloc(nodes, (trie->capacity *= 2) * sizeof(TNode)); if (!nodes) exit(1);
 				trie->nodes = nodes;
 			}
-#endif
 			nodes[len] = (TNode){ 0 };
+#endif
 			nodes[cur].next[value] = len++;
 			nodes[cur].state |= 0x2;
 		}
