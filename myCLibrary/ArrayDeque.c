@@ -34,14 +34,17 @@ Element AD_back(const ArrayDeque* pdeque) {
 #ifdef AUTOMATIC_RESIZE
 void AD_resize(ArrayDeque* pdeque) {
 	const int front = pdeque->front, rear = pdeque->rear, capacity = pdeque->capacity;
-	const int sz = (rear - front + capacity) & (capacity - 1);
-	if (sz == capacity - 1) {
-		Element* items2 = calloc(capacity * 2, sizeof(Element));
-		for (int i = 0; i < sz; i++) {
-			items2[i] = pdeque->items[(front + i) & (capacity - 1)];
+	if (front - rear == 1 || front - rear == 1 - capacity) {
+		pdeque->items = realloc(pdeque->items, (deque->capacity = capacity * 2) * sizeof(Element)); if (!pdeque->items) exit(1);
+		if (front < rear) return;
+		else if (rear <= capacity - front) {
+			for (int i = 0; i < rear; i++) { pdeque->items[i + capacity] = pdeque->items[i]; }
+			pdeque->rear = rear + capacity;
 		}
-		free(pdeque->items);
-		*pdeque = (ArrayDeque){ items2, capacity * 2, 0, sz };
+		else {
+			for (int i = front; i < capacity; i++) { pdeque->items[i + capacity] = pdeque->items[i]; }
+			pdeque->front = front + capacity;
+		}
 	}
 }
 #endif

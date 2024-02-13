@@ -28,14 +28,17 @@ int AQ_empty(const ArrayQueue* pqueue) {
 #ifdef AUTOMATIC_RESIZE
 void AQ_resize(ArrayQueue* pqueue) {
 	const int front = pqueue->front, rear = pqueue->rear, capacity = pqueue->capacity;
-	const int sz = (rear - front + capacity) & (capacity - 1);
-	if (sz == capacity - 1) {
-		Element* items2 = calloc(capacity * 2, sizeof(Element));
-		for (int i = 0; i < sz; i++) {
-			items2[i] = pqueue->items[(front + i) & (capacity - 1)];
+	if (front - rear == 1 || front - rear == 1 - capacity) {
+		pqueue->items = realloc(pqueue->items, (pqueue->capacity = capacity * 2) * sizeof(Element)); if (!pqueue->items) exit(1);
+		if (front < rear) return;
+		else if (rear <= capacity - front) {
+			for (int i = 0; i < rear; i++) { pqueue->items[i + capacity] = pqueue->items[i]; }
+			pqueue->rear = rear + capacity;
 		}
-		free(pqueue->items);
-		*pqueue = (ArrayQueue){ items2, capacity * 2, 0, sz };
+		else {
+			for (int i = front; i < capacity; i++) { pqueue->items[i + capacity] = pqueue->items[i]; }
+			pqueue->front = front + capacity;
+		}
 	}
 }
 #endif
