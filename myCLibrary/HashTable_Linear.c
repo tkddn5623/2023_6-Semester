@@ -69,8 +69,7 @@ void HT_insert_or_change(Hashtable* ht, int key, int value) {
 	for (int sz = 1 << ht->bucketbits, index = tiny_hash_i32(key, ht->bucketbits); ; index = (index + 1) & (sz - 1)) {
 		int key2 = ht->bucket[index].key;
 		if (key2 == HASH_EMPTY) {
-			ht->bucket[index].key = key;
-			ht->bucket[index].value = value;
+			ht->bucket[index] = (Keypair){ key,value };
 #ifdef AUTOMATIC_RESIZE
 			if (++ht->bucketload > sz / 2) HT_resize(ht);
 #endif
