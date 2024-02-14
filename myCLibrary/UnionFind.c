@@ -1,12 +1,5 @@
 #include <stdlib.h>
-#include <string.h>
 
-int* UF_init(int maxsize) {
-    int* roots;
-    if ((roots = calloc(maxsize, sizeof(int))) == NULL) exit(1);
-    memset(roots, -1, sizeof(int) * maxsize);
-    return roots;
-}
 int UF_find(int* roots, int key) {
     if (roots[key] < 0) return key;
     else return roots[key] = UF_find(roots, roots[key]);
@@ -19,6 +12,15 @@ void UF_union(int* roots, int A, int B) {
     roots[B] = A;
 }
 
+/*
+int* UF_init(int maxsize) {
+    int* roots;
+    if ((roots = calloc(maxsize, sizeof(int))) == NULL) exit(1);
+    memset(roots, -1, sizeof(int) * maxsize);
+    return roots;
+}
+*/
+
 
 /*
 * 2022.9.5 Mon
@@ -26,4 +28,7 @@ void UF_union(int* roots, int A, int B) {
 * 2023.7.5 Wed 
 * The root value is changed to have -1.
 * roots[A] becomes root and contains the size of sets
+*
+* 2024.2.13 Tue
+* UF_init is deprecated.
 */
