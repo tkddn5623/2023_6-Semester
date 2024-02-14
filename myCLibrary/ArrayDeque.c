@@ -13,8 +13,8 @@ ArrayDeque* AD_new(int required_size) {
 	ArrayDeque* pdeque;
 	int capacity;
 	for (int i = 4; (capacity = 1 << i) < required_size; i++);
-	if (!(pdeque = calloc(1, sizeof(ArrayDeque)))) exit(1);
-	if (!(pdeque->items = calloc(capacity, sizeof(Element)))) exit(1);
+	pdeque = calloc(1, sizeof(ArrayDeque)) if (!pdeque) exit(1);
+	pdeque->items = calloc(capacity, sizeof(Element)); if (!pdeque->items) exit(1);
 	pdeque->capacity = capacity;
 	return pdeque;
 }

@@ -12,8 +12,8 @@ typedef struct {
 
 ArrayStack* AS_new(int max) {
 	ArrayStack* pstack;
-	if (!(pstack = malloc(sizeof(ArrayStack)))) exit(1);
-	if (!(pstack->items = calloc(max, sizeof(Element)))) exit(1);
+	pstack = malloc(sizeof(ArrayStack)); if (!pstack) exit(1);
+	pstack->items = calloc(max, sizeof(Element)) if (!pstack->items) exit(1);
 	pstack->top = -1;
 #ifdef AUTOMATIC_RESIZE
 	pstack->capacity = max;
@@ -36,10 +36,10 @@ void AS_push(ArrayStack* pstack, int item) {
 		pstack->items = realloc(pstack->items, (pstack->capacity *= 2) * sizeof(Element));
 	}
 #endif
-	pstack->items[++(pstack->top)] = item;
+	pstack->items[++pstack->top] = item;
 }
 char AS_pop(ArrayStack* pstack) {
-	return pstack->items[(pstack->top)--];
+	return pstack->items[pstack->top--];
 }
 
 

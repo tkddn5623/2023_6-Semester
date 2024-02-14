@@ -16,8 +16,8 @@ typedef struct {
 
 ArrayHeap* AH_new(int max) {
 	ArrayHeap* pheap;
-	if (!(pheap = calloc(1, sizeof(ArrayHeap)))) exit(1);
-	if (!(pheap->items = calloc(max + 1, sizeof(HNode)))) exit(1);
+	pheap = calloc(1, sizeof(ArrayHeap)); if (!pheap) exit(1);
+	pheap->items = calloc(max + 1, sizeof(HNode)); if (!pheap->items) exit(1);
 #ifdef AUTOMATIC_RESIZE
 	pheap->capacity = max + 1;
 #endif
@@ -73,8 +73,8 @@ typedef struct {
 
 ArrayHeap* AH_new(int max) {
     ArrayHeap* pheap;
-    if (!(pheap = calloc(1, sizeof(ArrayHeap)))) exit(1);
-    if (!(pheap->items = calloc(max + 1, sizeof(int)))) exit(1);
+	pheap = calloc(1, sizeof(ArrayHeap)); if (!pheap) exit(1);
+	pheap->items = calloc(max + 1, sizeof(int)); if (!pheap->items) exit(1);
 #ifdef AUTOMATIC_RESIZE
 	pheap->capacity = max + 1;
 #endif

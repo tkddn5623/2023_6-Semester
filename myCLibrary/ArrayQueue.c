@@ -13,8 +13,8 @@ ArrayQueue* AQ_new(int required_size) {
 	ArrayQueue* pqueue;
 	int capacity;
 	for (int i = 4; (capacity = 1 << i) < required_size; i++);
-	if (!(pqueue = calloc(1, sizeof(ArrayQueue)))) exit(1);
-	if (!(pqueue->items = calloc(capacity, sizeof(Element)))) exit(1);
+	pqueue = calloc(1, sizeof(ArrayQueue)); if (!pqueue) exit(1);
+	pqueue->items = calloc(capacity, sizeof(Element)); if (!pqueue->items) exit(1);
 	pqueue->capacity = capacity;
 	return pqueue;
 }

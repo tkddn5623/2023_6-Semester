@@ -30,10 +30,10 @@ Hashtable* HT_new(int required_bucketsize) {
 	Hashtable* ht;
 	int bucketbits;
 	for (bucketbits = 4; (1 << bucketbits) < required_bucketsize; bucketbits++);
-	if (!(ht = calloc(1, sizeof(Hashtable)))) exit(1);
-	if (!(ht->bucket = calloc(1LL << bucketbits, sizeof(Keypair)))) exit(1);
-	for (int sz = 1 << bucketbits, i = 0; i < sz; i++) { ht->bucket[i].key = HASH_EMPTY; }
+	ht = calloc(1, sizeof(Hashtable)); if (!ht) exit(1);
+	ht->bucket = calloc(1LL << bucketbits, sizeof(Keypair)); if (!ht->bucket) exit(1);
 	ht->bucketbits = bucketbits;
+	for (int sz = 1 << bucketbits, i = 0; i < sz; i++) { ht->bucket[i].key = HASH_EMPTY; }
 	return ht;
 }
 void HT_delete(Hashtable* ht) {
