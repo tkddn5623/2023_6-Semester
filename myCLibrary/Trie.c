@@ -19,6 +19,9 @@ Trie* Trie_new(int size) {
 	Trie* t = malloc(sizeof(Trie)); if (!t) exit(1);
 	t->nodes = calloc(size, sizeof(TNode)); if (!t->nodes) exit(1);
 	t->len = 1;
+#ifdef AUTOMATIC_RESIZE
+	t->capacity = size;
+#endif
 	return t;
 }
 void Trie_delete(Trie* trie) {
