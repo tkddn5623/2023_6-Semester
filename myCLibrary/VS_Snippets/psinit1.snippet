@@ -10,8 +10,10 @@
     <Snippet>
       <Code Language="Cpp">
         <![CDATA[#include <stdio.h>
+		
 		#define MAXN (100000)
 		#define BUFMAX (10000)
+		
         void stdin_getline(char* dest) {
             for (*dest = 0, fgets(dest, BUFMAX, stdin); *dest & ~0x1f; dest++);; *dest = 0;
         }
