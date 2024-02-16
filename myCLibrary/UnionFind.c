@@ -1,23 +1,23 @@
 #include <stdlib.h>
 
-int UF_find(int* roots, int key) {
-    if (roots[key] < 0) return key;
-    else return roots[key] = UF_find(roots, roots[key]);
+int UF_find(int disjset[], int key) {
+    if (disjset[key] < 0) return key;
+    else return disjset[key] = UF_find(disjset, disjset[key]);
 }
-void UF_union(int* roots, int A, int B) {
-    A = UF_find(roots, A);
-    B = UF_find(roots, B);
+void UF_union(int disjset[], int A, int B) {
+    A = UF_find(disjset, A);
+    B = UF_find(disjset, B);
     if (A == B) return;
-    //roots[A] += roots[B];
-    roots[B] = A;
+    //disjset[A] += disjset[B];
+    disjset[B] = A;
 }
 
 /*
 int* UF_init(int maxsize) {
-    int* roots;
-    if ((roots = calloc(maxsize, sizeof(int))) == NULL) exit(1);
-    memset(roots, -1, sizeof(int) * maxsize);
-    return roots;
+    int* disjset;
+    if ((disjset = calloc(maxsize, sizeof(int))) == NULL) exit(1);
+    memset(disjset, -1, sizeof(int) * maxsize);
+    return disjset;
 }
 */
 
@@ -27,7 +27,7 @@ int* UF_init(int maxsize) {
 * 
 * 2023.7.5 Wed 
 * The root value is changed to have -1.
-* roots[A] becomes root and contains the size of sets
+* disjset[A] becomes root and contains the size of sets
 *
 * 2024.2.13 Tue
 * UF_init is deprecated.
