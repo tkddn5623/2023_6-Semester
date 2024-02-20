@@ -33,7 +33,7 @@ int AH_empty(const ArrayHeap* pheap) {
 void AH_push(ArrayHeap* pheap, HNode item) {
 #ifdef AUTOMATIC_RESIZE
 	if (pheap->size == pheap->capacity - 1) {
-		pheap->items = realloc(pheap->items, (pheap->capacity *= 2) * sizeof(HNode));
+		pheap->items = realloc(pheap->items, (pheap->capacity *= 2) * sizeof(HNode)); if (!pheap->items) exit(1);
 	}
 #endif
 	int parent, child = pheap->size + 1;
@@ -98,7 +98,7 @@ void AH_push(ArrayHeap* pheap, int item) {
 	pheap->size++;
 #ifdef AUTOMATIC_RESIZE
 	if (pheap->size == pheap->capacity - 1) {
-		pheap->items = realloc(pheap->items, (pheap->capacity *= 2) * sizeof(int));
+		pheap->items = realloc(pheap->items, (pheap->capacity *= 2) * sizeof(int)); if (!pheap->items) exit(1);
 	}
 #endif
 }

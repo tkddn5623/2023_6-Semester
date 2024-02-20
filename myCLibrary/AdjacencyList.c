@@ -15,7 +15,7 @@ typedef struct {
 Graph* GR_new(int vtxsize, int edgesize) {
 	Graph* graph;
 	graph = malloc(sizeof(Graph)); if (!graph) exit(1);
-	graph->edges = calloc(edgesize + vtxsize, sizeof(GNode)) if (!graph->edges) exit(1);
+	graph->edges = calloc(edgesize + vtxsize, sizeof(GNode)); if (!graph->edges) exit(1);
 	graph->vtxsize = vtxsize;
 	graph->edgesize = edgesize + vtxsize;
 	graph->edgecount = vtxsize;
