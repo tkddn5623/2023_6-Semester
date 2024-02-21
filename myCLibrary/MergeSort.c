@@ -16,11 +16,10 @@ void _MergeSort_impl(Element* list, Element* sorted, const int left, const int r
     while (second <= right) sorted[idx++] = list[second++];
     for (int i = left; i <= right; i++) list[i] = sorted[i];
 }
-Element* MergeSort(Element* list, int size) {
+void MergeSort(Element* list, int size) {
     Element* sorted = calloc(size, sizeof(Element)); if (!sorted) exit(1);
     _MergeSort_impl(list, sorted, 0, size - 1);
     free(sorted);
-    return list;
 }
 
 /*
@@ -40,10 +39,10 @@ void _MergeSort_impl(int* list, int* sorted, const int left, const int right) {
     while (second <= right) sorted[idx++] = list[second++];
     for (int i = left; i <= right; i++) list[i] = sorted[i];
 }
-int* MergeSort(int* list, int size) {
-    static int sorted[10000];
+void MergeSort(int* list, int size) {
+    int* sorted = calloc(size, sizeof(int)); if (!sorted) exit(1);
     _MergeSort_impl(list, sorted, 0, size - 1);
-    return list;
+	free(sorted);
 }
 */
 
@@ -104,4 +103,5 @@ int* MergeSort(int* list, const int size) {
 * 2023.1.30 Mon : Improved read
 * 2024.1.20 Sat : Improved readability
 * 2024.1.28 Sun : Non recursive example added
+* 2024.2.21 Wed : trivial change
 */
