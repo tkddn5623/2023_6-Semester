@@ -43,9 +43,7 @@ Keypair* HT_find(const Hashtable* ht, int key) {
 void HT_resize(Hashtable* ht) {
 	const int bits2 = ht->bucketbits + 1, sz = 1 << bits2;
 	Keypair* bucket2 = calloc(sz, sizeof(Keypair)); if (!bucket2) exit(1);
-	for (int i = 0; i < sz; i++) {
-		bucket2[i].key = HASH_EMPTY;
-	}
+	for (int i = 0; i < sz; i++) { bucket2[i].key = HASH_EMPTY; }
 	for (int j = sz / 2, i = 0; i < j; i++) {
 		if (ht->bucket[i].key == HASH_EMPTY) continue;
 		for (int index = tiny_hash_i32(ht->bucket[i].key, bits2); ; index = (index + 1) & (sz - 1)) {
