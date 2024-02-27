@@ -35,7 +35,7 @@ Element AD_back(const ArrayDeque* pdeque) {
 void AD_resize(ArrayDeque* pdeque) {
 	const int front = pdeque->front, rear = pdeque->rear, capacity = pdeque->capacity;
 	if (front - rear == 1 || front - rear == 1 - capacity) {
-		pdeque->items = realloc(pdeque->items, (deque->capacity = capacity * 2) * sizeof(Element)); if (!pdeque->items) exit(1);
+		pdeque->items = realloc(pdeque->items, (pdeque->capacity = capacity * 2) * sizeof(Element)); if (!pdeque->items) exit(1);
 		if (front < rear) return;
 		else if (rear <= capacity - front) {
 			for (int i = 0; i < rear; i++) { pdeque->items[i + capacity] = pdeque->items[i]; }
