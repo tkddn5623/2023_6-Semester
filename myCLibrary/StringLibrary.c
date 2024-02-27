@@ -17,7 +17,11 @@ int string_compare(const char* a, const char* b) {
 void string_copy(char* a, const char* b) {
 	while (*a = *b++);
 }
-
+int string_length(const char* a) {
+	const char* b = a;
+	while (*b) b++;
+	return b - a;
+}
 
 /*
 // Tokenizer <string.h> version
