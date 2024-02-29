@@ -69,11 +69,11 @@ void HT_insert_or_change(Hashtable* ht, int key, int value) {
 	}
 }
 
-int tiny_hash_str(const char str[]) {
+int tiny_hash_str(const char str[], int bits) {
 	unsigned int h = 0;
 	char ch;
 	while (ch = (*str++)) { h = (h + ch) * 5381u + ch; }
-	return h & (HASH_BLOCK_SIZE - 1);
+	return h & ((1 << bits) - 1);
 }
 int tiny_hash_i64(unsigned long long k, int bits) {
 	return (k * 11400714819323198485llu) >> (64 - bits);

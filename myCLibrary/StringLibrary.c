@@ -11,7 +11,7 @@ int string_tokenizer(char* tokens[], char* str) {
 	return i;
 }
 int string_compare(const char* a, const char* b) {
-	while (*a++ && *a == *b) a++, b++;
+	while (*a && *a == *b) a++, b++;
 	return *a - *b;
 }
 void string_copy(char* a, const char* b) {
