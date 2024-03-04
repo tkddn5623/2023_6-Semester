@@ -1,5 +1,3 @@
-#define MAXTREE (1 << 21)
-
 typedef struct {
     long long item;
     long long lazy;
@@ -36,7 +34,7 @@ long long _SG_query_impl(SegmentTree segtree[], const int from, const int to, co
 }
 void SG_construct(SegmentTree _Dest[], const long long items[], const int item_len) {
     int leafs = 1;
-    while (leafs < item_len) { leafs <<= 1; }
+    while (leafs < item_len) { leafs *= 2; }
     for (int i = 0; i < item_len; i++) {
         _Dest[i + leafs].item = items[i];
         _Dest[i + leafs].lazy = 0LL;
@@ -57,4 +55,7 @@ long long SG_query(SegmentTree segtree[], const int from, const int to) {
 /*
 * 2024.2.4 Sun
 * Lazy propagation first build
+*
+* 2024.3.2 Sat
+* macro deleted
 */

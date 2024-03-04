@@ -1,8 +1,6 @@
-#define MAXTREE (1 << 21)
-
 void SG_construct(long long _Dest[], const long long items[], const int item_len) {
 	int leafs = 1;
-	while (leafs < item_len) { leafs <<= 1; }
+	while (leafs < item_len) { leafs *= 2; }
 	for (int i = 0; i < item_len; i++) {
 		_Dest[i + leafs] = items[i];
 	}
@@ -54,4 +52,7 @@ long long SG_query_topdown(const long long segtree[], const int from, const int 
 *
 * 2024.2.3 Sat
 * Top-down approach added
+*
+* 2024.3.2 Sat
+* macro deleted.
 */
